@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Flow Studio</title>
+  
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+
+  <style>
+    :root{
+      --bg0:#050507;
+      --bg1:#0B0B0D;
+      --bg2:#121218;
+      --ink:#E8E8EA;
+      --muted:rgba(232,232,234,.70);
+      --faint:rgba(232,232,234,.12);
+      --line:rgba(232,232,234,.14);
+      --panel:rgba(18,18,24,.62);
+      --panel2:rgba(18,18,24,.36);
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+      --radius:20px;
+      --radius2:28px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 900px at 50% 20%, #0d0d12 0%, var(--bg1) 45%, var(--bg0) 100%);
+      overflow-x:hidden;
+    }
+
+    /* Canvas background */
+    #bg{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:-2;
+      opacity:.86;
+      filter: saturate(.85) contrast(1.05);
+    }
+    /* soft vignette */
+    .vignette{
+      position:fixed;
+      inset:-20%;
+      z-index:-1;
+      pointer-events:none;
+      background:
+        radial-gradient(900px 680px at 50% 20%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(900px 900px at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 58%, rgba(0,0,0,.82) 100%),
+        radial-gradient(1200px 900px at 50% 110%, rgba(255,255,255,.03) 0%, rgba(255,255,255,0) 55%);
+      mix-blend-mode: screen;
+      opacity:.85;
+      transform: translateZ(0);
+    }
+
+    a{color:inherit; text-decoration:none}
+    .wrap{width:min(var(--max), calc(100% - 48px)); margin:0 auto;}
+
+    /* Top nav */
+    header{
+      position:sticky;
+      top:0;
+      z-index:10;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(5,5,7,.65), rgba(5,5,7,.20));
+      border-bottom:1px solid rgba(232,232,234,.08);
+    }
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      font-weight:600;
+      font-size:12px;
+    }
+    .mark{
+      width:22px; height:22px; border-radius:999px;
+      background:
+        radial-gradient(circle at 55% 45%, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 42%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.95) 0%, rgba(0,0,0,.95) 52%, rgba(255,255,255,.08) 55%, rgba(255,255,255,0) 72%);
+      border:1px solid rgba(232,232,234,.14);
+      box-shadow: 0 0 0 6px rgba(232,232,234,.03);
+    }
+    nav{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.08em;
+    }
+    nav a{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid transparent;
+      transition: border-color .2s ease, background .2s ease, color .2s ease;
+    }
+    nav a:hover{
+      color:var(--ink);
+      background:rgba(232,232,234,.04);
+      border-color:rgba(232,232,234,.10);
+    }
+    .chip{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid rgba(232,232,234,.12);
+      background:rgba(18,18,24,.40);
+      padding:8px 12px;
+      border-radius:999px;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.06em;
+      cursor:pointer;
+      user-select:none;
+      transition: background .2s ease, border-color .2s ease, color .2s ease;
+    }
+    .toggle:hover{background:rgba(18,18,24,.55); color:var(--ink); border-color:rgba(232,232,234,.18)}
+    .dot{
+      width:8px;height:8px;border-radius:999px;
+      background:rgba(232,232,234,.18);
+      box-shadow:0 0 0 6px rgba(232,232,234,.05);
+    }
+    .dot.on{background:rgba(232,232,234,.65)}
+
+    /* Hero */
+    main{position:relative}
+    .hero{
+      padding:86px 0 56px;
+    }
+    .heroGrid{
+      display:grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap:28px;
+      align-items:end;
+    }
+    .kicker{
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.24em;
+      text-transform:uppercase;
+      margin:0 0 12px;
+    }
+    h1{
+      margin:0 0 14px;
+      font-weight:520;
+      letter-spacing:-.02em;
+      line-height:1.06;
+      font-size: clamp(44px, 5.2vw, 74px);
+    }
+    .sub{
+      margin:0;
+      max-width: 62ch;
+      color: rgba(232,232,234,.78);
+      font-size: 16px;
+      line-height:1.7;
+    }
+    .heroCard{
+      border-radius: var(--radius2);
+      border:1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.55), rgba(18,18,24,.25));
+      box-shadow: var(--shadow);
+      padding:18px 18px 16px;
+      overflow:hidden;
+      position:relative;
+    }
+    .heroCard:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(500px 320px at 60% 20%, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(500px 420px at 30% 80%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 60%);
+      transform: rotate(-12deg);
+      opacity:.55;
+      pointer-events:none;
+    }
+    .heroCard h2{
+      margin:0 0 10px;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:650;
+      position:relative;
+    }
+    .meta{
+      display:grid;
+      gap:10px;
+      position:relative;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      border-top:1px solid rgba(232,232,234,.08);
+      padding-top:10px;
+      color:rgba(232,232,234,.74);
+      font-size:13px;
+    }
+    .row b{
+      color:rgba(232,232,234,.92);
+      font-weight:520;
+      letter-spacing:.02em;
+    }
+    .ctaRow{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      position:relative;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(232,232,234,.14);
+      background:rgba(232,232,234,.06);
+      color:rgba(232,232,234,.90);
+      font-size:12px;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background:rgba(232,232,234,.10); border-color:rgba(232,232,234,.22)}
+    .btn.ghost{background:transparent; color:var(--muted)}
+    .btn.ghost:hover{background:rgba(232,232,234,.05); color:rgba(232,232,234,.92)}
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 10px;
+        margin-top: 8px;
+    }
+
+    /* Sections */
+    section{padding:56px 0}
+    .sectionTitle{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:18px;
+      margin-bottom:18px;
+    }
+    .sectionTitle h3{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.26em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:650;
+    }
+    .sectionTitle p{
+      margin:0;
+      color:rgba(232,232,234,.70);
+      font-size:13px;
+      line-height:1.6;
+      max-width:62ch;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+
+    .card{
+      grid-column: span 4;
+      border-radius: var(--radius);
+      border:1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.55), rgba(18,18,24,.22));
+      padding:16px 16px 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(232,232,234,.18);
+      background: linear-gradient(180deg, rgba(18,18,24,.62), rgba(18,18,24,.26));
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background:
+        radial-gradient(420px 260px at 60% 20%, rgba(255,255,255,.10) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(520px 320px at 20% 90%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 58%);
+      transform: rotate(-10deg);
+      opacity:.35;
+      pointer-events:none;
+    }
+    .cardTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      position:relative;
+    }
+    .tag{
+      font-size:11px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(232,232,234,.62);
+      border:1px solid rgba(232,232,234,.12);
+      border-radius:999px;
+      padding:6px 10px;
+      background:rgba(232,232,234,.03);
+      white-space:nowrap;
+    }
+    .card h4{
+      margin:8px 0 8px;
+      font-size:16px;
+      letter-spacing:.01em;
+      font-weight:560;
+      position:relative;
+    }
+    .card p{
+      margin:0;
+      color:rgba(232,232,234,.72);
+      font-size:13px;
+      line-height:1.65;
+      position:relative;
+    }
+    .mini{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+    }
+    .pill{
+      font-size:11px;
+      color:rgba(232,232,234,.62);
+      border:1px solid rgba(232,232,234,.10);
+      border-radius:999px;
+      padding:6px 10px;
+      background:rgba(18,18,24,.26);
+    }
+
+    /* Products Grid */
+    .productsGrid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .productHero{
+      grid-column: span 6; 
+      border-radius: var(--radius2);
+      border:1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.52), rgba(18,18,24,.18));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .productHero .imgWrap{
+      position:relative;
+      width:100%;
+      aspect-ratio: 16/9; 
+      background:rgba(0,0,0,.35);
+    }
+    .productHero img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:.96;
+      filter: saturate(.9) contrast(1.02);
+      transition: opacity 0.3s ease;
+    }
+    .productHero .cap{
+      position:absolute;
+      inset:auto 0 0 0;
+      padding:18px 18px 16px;
+      background: linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0));
+    }
+    .productHero h4{
+      margin:0 0 4px;
+      font-size:16px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:560;
+    }
+    .productHero p{
+      margin:0;
+      color:rgba(232,232,234,.74);
+      font-size:13px;
+      line-height:1.65;
+      max-width:78ch;
+    }
+    .productMeta{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:10px;
+      padding:16px 18px 18px;
+    }
+    .pm{
+      grid-column: span 12; 
+      display:flex;
+      justify-content: space-between;
+      border-bottom:1px solid rgba(232,232,234,.06);
+      padding:6px 0;
+    }
+    .pm:last-child{border-bottom:none}
+    .pm .k{
+      font-size:11px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color:rgba(232,232,234,.50);
+    }
+    .pm .v{
+      font-size:12px;
+      color:rgba(232,232,234,.84);
+      text-align:right;
+    }
+
+    /* Process */
+    .step{
+      grid-column: span 3;
+      border-radius: var(--radius);
+      border:1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.48), rgba(18,18,24,.18));
+      padding:14px 14px 12px;
+      position:relative;
+      overflow:hidden;
+    }
+    .step:before{
+      content:"";
+      position:absolute; inset:-60%;
+      background:
+        radial-gradient(520px 360px at 40% 40%, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 55%);
+      opacity:.28;
+      pointer-events:none;
+    }
+    .num{
+      width:34px; height:34px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      border:1px solid rgba(232,232,234,.14);
+      background:rgba(232,232,234,.04);
+      color:rgba(232,232,234,.86);
+      font-size:12px;
+      letter-spacing:.08em;
+      position:relative;
+    }
+    .step h5{margin:12px 0 6px; font-size:14px; font-weight:560; position:relative;}
+    .step p{margin:0; color:rgba(232,232,234,.72); font-size:13px; line-height:1.65; position:relative;}
+
+    .processVisuals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .p-visual {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(232,232,234,.10);
+      background: rgba(18,18,24,.3);
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    /* [新增] Others 區塊樣式 */
+    .otherCard {
+      grid-column: span 4;
+      border-radius: var(--radius2);
+      border: 1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.4), rgba(18,18,24,.1));
+      overflow: hidden;
+      aspect-ratio: 16/10;
+      position: relative;
+    }
+    .otherCard img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0.9;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .otherCard:hover img {
+        opacity: 1;
+        transform: scale(1.25);
+    }
+
+    /* About + Contact */
+    .twoCol{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    .panel{
+      border-radius: var(--radius2);
+      border:1px solid rgba(232,232,234,.10);
+      background: linear-gradient(180deg, rgba(18,18,24,.52), rgba(18,18,24,.20));
+      padding:18px;
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .panel:before{
+      content:"";
+      position:absolute; inset:-45%;
+      background:
+        radial-gradient(600px 380px at 75% 25%, rgba(255,255,255,.09) 0%, rgba(255,255,255,0) 58%),
+        radial-gradient(520px 360px at 20% 85%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 60%);
+      opacity:.35;
+      pointer-events:none;
+    }
+    .panel h4{margin:0 0 10px; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted); font-weight:650; position:relative;}
+    .panel p{margin:0; color:rgba(232,232,234,.78); line-height:1.75; font-size:14px; position:relative;}
+
+    .contactLine{
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      position:relative;
+    }
+    .linkPill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid rgba(232,232,234,.14);
+      background:rgba(232,232,234,.04);
+      color:rgba(232,232,234,.86);
+      font-size:12px;
+      letter-spacing:.06em;
+      transition: background .2s ease, border-color .2s ease;
+    }
+    .linkPill:hover{
+      background:rgba(232,232,234,.10);
+      border-color:rgba(232,232,234,.25);
+    }
+    .linkPill span{color:rgba(232,232,234,.62)}
+    footer{
+      padding:40px 0 54px;
+      color:rgba(232,232,234,.55);
+      font-size:12px;
+      border-top:1px solid rgba(232,232,234,.08);
+    }
+
+    /* Music toggle */
+    .musicToggle{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:20;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .musicBtn{
+      appearance:none;
+      border:1px solid rgba(232,232,234,.12);
+      background:rgba(18,18,24,.40);
+      color:rgba(232,232,234,.86);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:12px;
+      letter-spacing:.10em;
+      text-transform:uppercase;
+      transition: background .2s ease, border-color .2s ease, transform .15s ease;
+      user-select:none;
+    }
+    .musicBtn:hover{
+      background:rgba(18,18,24,.55);
+      border-color:rgba(232,232,234,.18);
+      transform: translateY(-1px);
+    }
+    .musicHint{
+      font-size:12px;
+      color:rgba(232,232,234,.62);
+      letter-spacing:.06em;
+      display:none;
+    }
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .heroGrid{grid-template-columns: 1fr; align-items:start}
+      .card{grid-column: span 6}
+      .step{grid-column: span 6}
+      .twoCol{grid-template-columns:1fr}
+      nav{display:none}
+      .pm{grid-column: span 12}
+      .productHero{grid-column: span 12;}
+      .processVisuals{grid-template-columns: 1fr;}
+      /* [修改] 手機版 Others 變成單欄堆疊 */
+      .otherCard { grid-column: span 12; }
+    }
+    @media (max-width: 560px){
+      .wrap{width:min(var(--max), calc(100% - 28px))}
+      .hero{padding:70px 0 44px}
+      .card{grid-column: span 12}
+      .step{grid-column: span 12}
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="bg" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+
+  <header>
+    <div class="wrap nav">
+      <div class="brand" aria-label="Flow Studio">
+        <div class="mark" aria-hidden="true"></div>
+        <div>Flow Studio</div>
+      </div>
+
+      <nav aria-label="Primary">
+        <a href="#works">Works</a>
+        <a href="#process">Process</a>
+        <a href="#others">Others</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <div class="chip">
+        <button class="toggle" id="motionToggle" type="button" aria-pressed="true">
+          <span class="dot on" id="motionDot" aria-hidden="true"></span>
+          Motion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap hero" id="top">
+      <div class="heroGrid">
+        <div>
+          <p class="kicker">Black field • gravitational flow</p>
+          <h1>Design that pulls attention into focus.</h1>
+          <p class="sub">
+            Flow Studio is a product design practice built around continuity—where intent, form, and experience bend together.
+            Minimal surface, dense thinking. Quiet visuals, heavy clarity.
+          </p>
+        </div>
+
+        <div class="heroCard" role="note" aria-label="Studio snapshot">
+          <h2>Studio</h2>
+          <div class="meta">
+            <div class="row"><span>Focus</span><b>Product / Interaction</b></div>
+            <div class="row"><span>Approach</span><b>Field-driven minimalism</b></div>
+            <div class="row"><span>Output</span><b>Concept → Prototype → System</b></div>
+          </div>
+          <div class="ctaRow">
+            <a class="btn" href="#works">View Works</a>
+            <a class="btn ghost" href="#contact">Contact</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section id="works">
+      <div class="wrap">
+        <div class="sectionTitle">
+          <h3>Selected Works</h3>
+          <p>Explorations in form, gravity, and interface.</p>
+        </div>
+
+        <div class="productsGrid" aria-label="Products">
+          
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p1_a.png" alt=""Port"ery 1" class="p-img">
+              <div class="cap">
+                <h4>"Port"ery 1</h4>
+                <p>Because the universe is vast and indifferent.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Electronics</div></div>
+              <div class="pm"><div class="k">Material</div><div class="v">Matte black</div></div>
+            </div>
+          </article>
+
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p2_a.png" alt="Flow Minimum" class="p-img">
+              <div class="cap">
+                <h4>Flow Minimum</h4>
+                <p>Quiet hardware. Heavy clarity.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Electronics</div></div>
+              <div class="pm"><div class="k">Feature</div><div class="v">CD Playback</div></div>
+            </div>
+          </article>
+
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p3_a.png" alt="Flow X" class="p-img">
+              <div class="cap">
+                <h4>Flow X</h4>
+                <p>A field, not a stage.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Gaming</div></div>
+              <div class="pm"><div class="k">CMF</div><div class="v">Dark matte</div></div>
+            </div>
+          </article>
+
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p4_a.png" alt="Flow Wave" class="p-img">
+              <div class="cap">
+                <h4>Flow Wave</h4>
+                <p>Carry the field — protection shaped by motion.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Bag</div></div>
+              <div class="pm"><div class="k">Style</div><div class="v">Orbit ridges</div></div>
+            </div>
+          </article>
+
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p5_a.png" alt="Flow mute" class="p-img">
+              <div class="cap">
+                <h4>Flow mute</h4>
+                <p>Sound has mass — a speaker as gravity source.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Audio</div></div>
+              <div class="pm"><div class="k">Driver</div><div class="v">Full-range</div></div>
+            </div>
+          </article>
+
+          <article class="productHero">
+            <div class="imgWrap">
+              <img src="p6_a.png" alt="Flow Flux" class="p-img">
+              <div class="cap">
+                <h4>Flow Flux</h4>
+                <p>Designed to move. Built to endure.</p>
+                <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+              </div>
+            </div>
+            <div class="productMeta">
+              <div class="pm"><div class="k">Category</div><div class="v">Apparel</div></div>
+              <div class="pm"><div class="k">Fit</div><div class="v">Relaxed</div></div>
+            </div>
+          </article>
+        </div>
+
+        <div style="height:40px"></div>
+        
+        <div class="grid" role="list">
+          <article class="card" role="listitem">
+            <div class="cardTop"><div class="tag">Concept</div><div class="tag">Hardware</div></div>
+            <h4>Event Horizon Dock</h4>
+            <p>將「插拔、擴充、收納」做成一個無干擾的連續動作，讓設備進入工作狀態像被重力拉入軌道。</p>
+          </article>
+          <article class="card" role="listitem">
+            <div class="cardTop"><div class="tag">System</div><div class="tag">Interface</div></div>
+            <h4>Gravitational UI Field</h4>
+            <p>以「場」取代「頁」：資訊密度沿中心聚集，互動回饋低頻、低對比，建立長時間專注的節奏。</p>
+          </article>
+          <article class="card" role="listitem">
+            <div class="cardTop"><div class="tag">Experimental</div><div class="tag">Generative</div></div>
+            <h4>Singularity Visual Engine</h4>
+            <p>用生成式「流場」做視覺底層：永遠不完全重複、低頻漂移，成為網站與展示的靜默引力。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="wrap">
+        <div class="sectionTitle">
+          <h3>Process</h3>
+          <p>極簡不是減法，而是把「決策密度」集中到核心。</p>
+        </div>
+        
+        <div class="processVisuals">
+            <img src="about_1.png" class="p-visual" alt="Process Intro 1">
+            <img src="about_2.png" class="p-visual" alt="Process Intro 2">
+        </div>
+
+        <div class="grid">
+          <div class="step"><div class="num">01</div><h5>Field Definition</h5><p>定義「重力中心」：使用者的真正動機。</p></div>
+          <div class="step"><div class="num">02</div><h5>Orbit Mapping</h5><p>把需求轉成可運行的軌道與節奏。</p></div>
+          <div class="step"><div class="num">03</div><h5>Prototype</h5><p>用原型測「吸引力」與低干擾回饋。</p></div>
+          <div class="step"><div class="num">04</div><h5>System</h5><p>收斂成系統：結構、CMF、一致性。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="others">
+        <div class="wrap">
+            <div class="sectionTitle">
+                <h3>Others</h3>
+                <p>Experiments, side projects, and visual explorations.</p>
+            </div>
+            <div class="grid">
+                <div class="otherCard">
+                    <img src="other_1.png" alt="Other work 1">
+                </div>
+                <div class="otherCard">
+                    <img src="other_2.png" alt="Other work 2">
+                </div>
+                <div class="otherCard">
+                    <img src="other_3.png" alt="Other work 3">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about">
+      <div class="wrap">
+        <div class="sectionTitle"><h3>About</h3></div>
+        <div class="twoCol">
+          <div class="panel">
+            <h4>Positioning</h4>
+            <p>Flow Studio builds product experiences that feel inevitable—where each interaction is a small continuation of the last.</p>
+          </div>
+          <div class="panel">
+            <h4>Capabilities</h4>
+            <p>Product strategy • Industrial design • Interaction design • Prototyping • Design systems.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="wrap">
+        <div class="sectionTitle"><h3>Contact</h3></div>
+        <div class="panel">
+          <h4>DESIGNER</h4>
+          <p style="font-size:15px; color:var(--ink); margin-bottom:16px;">
+            施奕廷 Draimer
+          </p>
+          
+          <div class="contactLine">
+            <a class="linkPill" href="https://www.instagram.com/kindredaimer/?hl=zh-tw" target="_blank">
+              <span>IG</span> @kindredaimer
+            </a>
+            <a class="linkPill" href="tel:0938021687">
+              <span>TEL</span> 0938-021-687
+            </a>
+            <a class="linkPill" href="mailto:26213395timmy@gmail.com">
+              <span>Email</span> 26213395timmy@gmail.com
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">© <span id="year"></span> Flow Studio — field-driven minimalism.</div>
+    </footer>
+  </main>
+
+  <audio id="bgm" src="music.mp3" loop autoplay></audio>
+  <div class="musicToggle" aria-label="Background music controls">
+    <button class="musicBtn" id="musicBtn" type="button">Music On</button>
+  </div>
+
+  <script>
+    // Detail Button Logic
+    document.querySelectorAll('.toggle-detail').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const card = e.target.closest('.productHero');
+        const img = card.querySelector('.p-img');
+        const currentSrc = img.getAttribute('src');
+
+        if(currentSrc.includes('_a.png')) {
+          img.src = currentSrc.replace('_a.png', '_b.png');
+          e.target.textContent = 'Back';
+        } else {
+          img.src = currentSrc.replace('_b.png', '_a.png');
+          e.target.textContent = 'View Detail';
+        }
+      });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        const id = a.getAttribute('href');
+        if(!id || id === '#') return;
+        const el = document.querySelector(id);
+        if(!el) return;
+        e.preventDefault();
+        el.scrollIntoView({behavior: 'smooth', block: 'start'});
+      });
+    });
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Motion preference + toggle
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let motionEnabled = !prefersReduced;
+
+    const motionToggle = document.getElementById('motionToggle');
+    const motionDot = document.getElementById('motionDot');
+
+    function syncMotionUI(){
+      motionToggle.setAttribute('aria-pressed', String(motionEnabled));
+      motionDot.classList.toggle('on', motionEnabled);
+    }
+    syncMotionUI();
+
+    motionToggle.addEventListener('click', ()=>{
+      motionEnabled = !motionEnabled;
+      syncMotionUI();
+      if(motionEnabled) start(); else stop();
+    });
+
+    // Music Control
+    const bgm = document.getElementById('bgm');
+    const musicBtn = document.getElementById('musicBtn');
+
+    async function tryPlay(){
+      try{ await bgm.play(); }catch(e){}
+    }
+
+    window.addEventListener('load', ()=>{
+      bgm.volume = 0.65;
+      tryPlay();
+    }, {once:true});
+
+    musicBtn.addEventListener('click', ()=>{
+      if(bgm.paused){
+        tryPlay();
+        musicBtn.textContent = 'Music On';
+      }else{
+        bgm.pause();
+        musicBtn.textContent = 'Music Off';
+      }
+    });
+
+    // Canvas Background (Gravitational Field)
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d', { alpha: true });
+
+    let w=0, h=0, dpr=1;
+    function resize(){
+      dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      w = Math.floor(window.innerWidth);
+      h = Math.floor(window.innerHeight);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resize, {passive:true});
+    resize();
+
+    const center = { x: () => w*0.52, y: () => h*0.30 };
+    const particles = [];
+    const COUNT = 140;
+    const trails = 0.10; 
+
+    function rand(a,b){ return a + Math.random()*(b-a); }
+
+    function init(){
+      particles.length = 0;
+      for(let i=0;i<COUNT;i++){
+        const r = rand(Math.min(w,h)*0.10, Math.min(w,h)*0.60);
+        particles.push({
+          r,
+          ang: rand(0, Math.PI*2),
+          speed: rand(0.00025, 0.0012),
+          phase: rand(0, Math.PI*2),
+          wobble: rand(0.6, 1.6),
+          alpha: rand(0.08, 0.22),
+          width: rand(0.6, 1.4)
+        });
+      }
+    }
+    init();
+
+    let t=0, raf=0;
+
+    function draw(){
+      t += 1;
+      ctx.fillStyle = `rgba(5,5,7,${trails})`;
+      ctx.fillRect(0,0,w,h);
+
+      const cx = center.x(), cy = center.y();
+      const time = t * 0.008;
+
+      // Horizon glow
+      const horizonR = Math.min(w,h)*0.12;
+      const g = ctx.createRadialGradient(cx, cy, horizonR*0.15, cx, cy, horizonR*1.35);
+      g.addColorStop(0, 'rgba(255,255,255,0.06)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx, cy, horizonR*1.35, 0, Math.PI*2); ctx.fill();
+
+      // Void
+      ctx.fillStyle = 'rgba(0,0,0,0.90)';
+      ctx.beginPath(); ctx.arc(cx, cy, horizonR*0.70, 0, Math.PI*2); ctx.fill();
+
+      // Particles
+      for(const p of particles){
+        const pull = 1 / Math.max(0.35, (p.r / (Math.min(w,h)*0.55)));
+        const wave = Math.sin(time * 0.8 + p.phase) * (p.wobble * 6);
+        p.ang += p.speed * (0.7 + pull*0.55);
+        p.r += (Math.sin(time*0.55 + p.phase) * 0.12);
+
+        const r = p.r + wave;
+        const x = cx + Math.cos(p.ang) * r;
+        const y = cy + Math.sin(p.ang) * r * 0.72;
+        const x2 = cx + Math.cos(p.ang - 0.02) * (r + 8);
+        const y2 = cy + Math.sin(p.ang - 0.02) * (r + 8) * 0.72;
+
+        ctx.strokeStyle = `rgba(232,232,234,${p.alpha})`;
+        ctx.lineWidth = p.width;
+        ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x,y); ctx.stroke();
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    function start(){
+      stop();
+      ctx.fillStyle = 'rgba(5,5,7,1)';
+      ctx.fillRect(0,0,w,h);
+      raf = requestAnimationFrame(draw);
+    }
+    function stop(){
+      if(raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    if(motionEnabled) start();
+    
+    let lastW = w, lastH = h;
+    setInterval(()=>{
+      if(Math.abs(w-lastW) > 120 || Math.abs(h-lastH) > 120){
+        lastW = w; lastH = h;
+        init();
+      }
+    }, 600);
+  </script>
+</body>
+</html>
