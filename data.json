@@ -12,7 +12,7 @@
   "works": [
     {
       "id": "w2",
-      "name": "Flow Minimum",
+      "name": "FLOW  1 series",
       "desc": "Quiet hardware. Heavy clarity.",
       "imgA": "p2_a.png",
       "imgB": "p2_b.png",
@@ -29,7 +29,7 @@
     },
     {
       "id": "w3",
-      "name": "Flow X",
+      "name": "FLOW  Minimum",
       "desc": "A field, not a stage.",
       "imgA": "p3_a.png",
       "imgB": "p3_b.png",
@@ -63,7 +63,7 @@
     },
     {
       "id": "w5",
-      "name": "Flow mute",
+      "name": "Sound Blaster",
       "desc": "Sound has mass — a speaker as gravity source.",
       "imgA": "p5_a.png",
       "imgB": "p5_b.png",
