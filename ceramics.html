@@ -456,27 +456,16 @@ let CERAMICS = [];
 let filteredItems = [];
 let activeFilter  = 'all';
 
-// Load data.json from GitHub → localStorage fallback → empty
+// Load data.json - 直接用相對路徑，不依賴 localStorage 設定
 async function loadData() {
   let data = null;
 
   try {
-    const ghRaw = localStorage.getItem('fs_gh');
-    if (ghRaw) {
-      const gh = JSON.parse(ghRaw);
-      if (gh.owner && gh.repo) {
-        const branch = gh.branch || 'main';
-        const path   = gh.path   || 'data.json';
-        const url    = `https://raw.githubusercontent.com/${gh.owner}/${gh.repo}/${branch}/${path}?t=${Date.now()}`;
-        const res    = await fetch(url);
-        if (res.ok) {
-          data = await res.json();
-          localStorage.setItem('fs_data', JSON.stringify(data));
-        }
-      }
-    }
+    const res = await fetch('./data.json?t=' + Date.now());
+    if (res.ok) data = await res.json();
   } catch(e) {}
 
+  // Fall back to localStorage
   if (!data) {
     const raw = localStorage.getItem('fs_data');
     if (raw) try { data = JSON.parse(raw); } catch(e) {}

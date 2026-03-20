@@ -1222,24 +1222,14 @@
         }
       }
 
-      // ── 1. Try GitHub raw data.json ──────────────────────────
+      // ── 1. 直接用相對路徑抓同目錄的 data.json ───────────────
       let loaded = false;
       try {
-        const ghRaw = localStorage.getItem('fs_gh');
-        if (ghRaw) {
-          const gh = JSON.parse(ghRaw);
-          if (gh.owner && gh.repo && gh.path) {
-            const branch  = gh.branch || 'main';
-            const rawUrl  = `https://raw.githubusercontent.com/${gh.owner}/${gh.repo}/${branch}/${gh.path}`;
-            const res     = await fetch(rawUrl + '?t=' + Date.now());
-            if (res.ok) {
-              const D = await res.json();
-              applyData(D);
-              // Also update localStorage cache
-              localStorage.setItem('fs_data', JSON.stringify(D));
-              loaded = true;
-            }
-          }
+        const res = await fetch('./data.json?t=' + Date.now());
+        if (res.ok) {
+          const D = await res.json();
+          applyData(D);
+          loaded = true;
         }
       } catch(e) { /* silently fall through to localStorage */ }
 
