@@ -643,6 +643,7 @@
         <a href="#others">Others</a>
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
+        <a href="ceramics.html">Ceramics ↗</a>
       </nav>
 
       <div class="chip">
@@ -947,6 +948,11 @@
       motionDot.classList.toggle('on', motionEnabled);
     }
     syncMotionUI();
+
+    // Auto-start animation on load
+    window.addEventListener('load', () => {
+      if (motionEnabled) start();
+    });
 
     motionToggle.addEventListener('click', ()=>{
       motionEnabled = !motionEnabled;
