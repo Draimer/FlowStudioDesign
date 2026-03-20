@@ -876,8 +876,8 @@
             <a class="linkPill" href="tel:0938021687">
               <span>TEL</span> 0938-021-687
             </a>
-            <a class="linkPill" href="mailto:26213395timmy@gmail.com">
-              <span>Email</span> 26213395timmy@gmail.com
+            <a class="linkPill" href="/cdn-cgi/l/email-protection#f3c1c5c1c2c0c0cac6879a9e9e8ab3949e929a9fdd909c9e">
+              <span>Email</span> <span class="__cf_email__" data-cfemail="11232723202222282465787c7c6851767c70787d3f727e7c">[email&#160;protected]</span>
             </a>
           </div>
         </div>
@@ -885,7 +885,15 @@
     </section>
 
     <footer>
-      <div class="wrap">© <span id="year"></span> Flow Studio — field-driven minimalism.</div>
+      <div class="wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <span>© <span id="year"></span> Flow Studio — field-driven minimalism.</span>
+          <span style="font-size:11px; color:rgba(232,232,234,.38); letter-spacing:.06em;">
+            本網站所有內容，包含文字、圖像、設計及作品，均受著作權法保護。<br>
+            未經授權，不得以任何形式重製、散佈或使用。All rights reserved.
+          </span>
+        </div>
+      </div>
     </footer>
   </main>
 
@@ -894,7 +902,7 @@
     <button class="musicBtn" id="musicBtn" type="button">Music On</button>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Detail Button Logic
     document.querySelectorAll('.toggle-detail').forEach(btn => {
       btn.addEventListener('click', function(e) {
@@ -1065,15 +1073,182 @@
       raf = 0;
     }
 
-    if(motionEnabled) start();
     
-    let lastW = w, lastH = h;
-    setInterval(()=>{
-      if(Math.abs(w-lastW) > 120 || Math.abs(h-lastH) > 120){
-        lastW = w; lastH = h;
-        init();
+    // ── CMS Data Loader ──────────────────────────────────────────
+    // Priority: GitHub raw data.json → localStorage fallback
+    (async function loadCMSData() {
+
+      function esc(s) {
+        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       }
-    }, 600);
+
+      function applyData(D) {
+        if (!D) return;
+
+        // Hero
+        const h = D.hero;
+        if (h) {
+          const kicker = document.querySelector('.kicker');
+          const h1el   = document.querySelector('h1');
+          const subEl  = document.querySelector('.sub');
+          if (kicker) kicker.textContent = h.kicker;
+          if (h1el)   h1el.textContent   = h.title;
+          if (subEl)  subEl.textContent  = h.sub;
+          const rows = document.querySelectorAll('.heroCard .row b');
+          if (rows.length >= 3 && h.card) {
+            rows[0].textContent = h.card.focus;
+            rows[1].textContent = h.card.approach;
+            rows[2].textContent = h.card.output;
+          }
+        }
+
+        // Works
+        if (D.works && D.works.length) {
+          const grid = document.querySelector('.productsGrid');
+          if (grid) {
+            grid.innerHTML = D.works.map((w,wi) => `
+              <article class="productHero" data-wi="${wi}">
+                <div class="imgWrap">
+                  <img src="${esc(w.imgA)}" alt="${esc(w.name)}" class="p-img">
+                  <div class="cap">
+                    <h4>${esc(w.name)}</h4>
+                    <p>${esc(w.desc)}</p>
+                    <button class="btn ghost btn-sm toggle-detail">View Detail</button>
+                  </div>
+                </div>
+                <div class="productMeta">
+                  ${(w.meta||[]).map(m=>`
+                    <div class="pm">
+                      <div class="k">${esc(m.k)}</div>
+                      <div class="v">${esc(m.v)}</div>
+                    </div>`).join('')}
+                </div>
+              </article>`).join('');
+
+            grid.querySelectorAll('.toggle-detail').forEach(btn => {
+              btn.addEventListener('click', function(e) {
+                const card = e.target.closest('.productHero');
+                const img  = card.querySelector('.p-img');
+                const wi   = +card.dataset.wi;
+                const w    = D.works[wi];
+                if (!w) return;
+                const showingB = img.getAttribute('data-b');
+                if (!showingB && w.imgB) {
+                  img.src = w.imgB; img.setAttribute('data-b','1'); e.target.textContent = 'Back';
+                } else {
+                  img.src = w.imgA; img.removeAttribute('data-b'); e.target.textContent = 'View Detail';
+                }
+              });
+            });
+          }
+        }
+
+        // Concept Cards
+        if (D.concepts && D.concepts.length) {
+          const cardGrid = document.querySelector('#works .grid[role="list"]');
+          if (cardGrid) {
+            cardGrid.innerHTML = D.concepts.map(c => `
+              <article class="card" role="listitem">
+                <div class="cardTop">
+                  ${(c.tags||[]).map(t=>`<div class="tag">${esc(t)}</div>`).join('')}
+                </div>
+                <h4>${esc(c.name)}</h4>
+                <p>${esc(c.desc)}</p>
+              </article>`).join('');
+          }
+        }
+
+        // Process
+        if (D.process) {
+          const procSub = document.querySelector('#process .sectionTitle p');
+          if (procSub) procSub.textContent = D.process.subtitle;
+          if (D.process.steps && D.process.steps.length) {
+            const stepGrid = document.querySelector('#process .grid');
+            if (stepGrid) {
+              stepGrid.innerHTML = D.process.steps.map(s => `
+                <div class="step">
+                  <div class="num">${esc(s.num)}</div>
+                  <h5>${esc(s.title)}</h5>
+                  <p>${esc(s.desc)}</p>
+                </div>`).join('');
+            }
+          }
+        }
+
+        // Others
+        if (D.others && D.others.length) {
+          const othGrid = document.querySelector('#others .grid');
+          if (othGrid) {
+            othGrid.innerHTML = D.others.map(o => `
+              <div class="otherCard">
+                <img src="${esc(o.src)}" alt="${esc(o.alt)}">
+              </div>`).join('');
+          }
+        }
+
+        // About
+        if (D.about) {
+          const panels = document.querySelectorAll('#about .panel p');
+          if (panels[0]) panels[0].textContent = D.about.positioning;
+          if (panels[1]) panels[1].textContent = D.about.capabilities;
+        }
+
+        // Contact
+        if (D.contact) {
+          const nameEl = document.querySelector('#contact .panel > p');
+          if (nameEl) nameEl.textContent = D.contact.name;
+          const pills = document.querySelectorAll('#contact .linkPill');
+          if (pills[0]) {
+            pills[0].href = D.contact.igUrl;
+            const igLabel = pills[0].querySelector('span:last-of-type');
+            if (igLabel) igLabel.textContent = D.contact.ig;
+          }
+          if (pills[1]) {
+            pills[1].href = 'tel:' + D.contact.tel.replace(/[^0-9+]/g,'');
+            const telNode = Array.from(pills[1].childNodes).find(n => n.nodeType===3 && n.textContent.trim());
+            if (telNode) telNode.textContent = ' ' + D.contact.tel;
+          }
+          if (pills[2]) {
+            pills[2].href = 'mailto:' + D.contact.email;
+            const emailSp = pills[2].querySelector('.cms-email') || pills[2].lastElementChild;
+            if (emailSp) emailSp.textContent = D.contact.email;
+          }
+        }
+      }
+
+      // ── 1. Try GitHub raw data.json ──────────────────────────
+      let loaded = false;
+      try {
+        const ghRaw = localStorage.getItem('fs_gh');
+        if (ghRaw) {
+          const gh = JSON.parse(ghRaw);
+          if (gh.owner && gh.repo && gh.path) {
+            const branch  = gh.branch || 'main';
+            const rawUrl  = `https://raw.githubusercontent.com/${gh.owner}/${gh.repo}/${branch}/${gh.path}`;
+            const res     = await fetch(rawUrl + '?t=' + Date.now());
+            if (res.ok) {
+              const D = await res.json();
+              applyData(D);
+              // Also update localStorage cache
+              localStorage.setItem('fs_data', JSON.stringify(D));
+              loaded = true;
+            }
+          }
+        }
+      } catch(e) { /* silently fall through to localStorage */ }
+
+      // ── 2. Fall back to localStorage ─────────────────────────
+      if (!loaded) {
+        const raw = localStorage.getItem('fs_data');
+        if (raw) {
+          try { applyData(JSON.parse(raw)); } catch(e) {}
+        }
+      }
+
+    })();
+    // ── End CMS Data Loader ──────────────────────────────────────
+
+
   </script>
 </body>
 </html>
