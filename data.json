@@ -10,162 +10,31 @@
     }
   },
   "works": [
-    {
-      "id": "w2",
-      "name": "FLOW  1 series",
-      "desc": "Quiet hardware. Heavy clarity.",
-      "imgA": "p2_a.png",
-      "imgB": "p2_b.png",
-      "meta": [
-        {
-          "k": "Category",
-          "v": "Electronics"
-        },
-        {
-          "k": "Feature",
-          "v": "CD Playback"
-        }
-      ]
-    },
-    {
-      "id": "w3",
-      "name": "FLOW  Minimum",
-      "desc": "A field, not a stage.",
-      "imgA": "p3_a.png",
-      "imgB": "p3_b.png",
-      "meta": [
-        {
-          "k": "Category",
-          "v": "Gaming"
-        },
-        {
-          "k": "CMF",
-          "v": "Dark matte"
-        }
-      ]
-    },
-    {
-      "id": "w4",
-      "name": "Flow Wave",
-      "desc": "Carry the field — protection shaped by motion.",
-      "imgA": "p4_a.png",
-      "imgB": "p4_b.png",
-      "meta": [
-        {
-          "k": "Category",
-          "v": "Bag"
-        },
-        {
-          "k": "Style",
-          "v": "Orbit ridges"
-        }
-      ]
-    },
-    {
-      "id": "w5",
-      "name": "Sound Blaster",
-      "desc": "Sound has mass — a speaker as gravity source.",
-      "imgA": "p5_a.png",
-      "imgB": "p5_b.png",
-      "meta": [
-        {
-          "k": "Category",
-          "v": "Audio"
-        },
-        {
-          "k": "Driver",
-          "v": "Full-range"
-        }
-      ]
-    },
-    {
-      "id": "w6",
-      "name": "Flow Flux",
-      "desc": "Designed to move. Built to endure.",
-      "imgA": "p6_a.png",
-      "imgB": "p6_b.png",
-      "meta": [
-        {
-          "k": "Category",
-          "v": "Apparel"
-        },
-        {
-          "k": "Fit",
-          "v": "Relaxed"
-        }
-      ]
-    }
+    { "id": "w1", "name": "\"Port\"ery 1", "desc": "Because the universe is vast and indifferent.", "imgA": "images/p1_a.png", "imgB": "images/p1_b.png", "meta": [{"k":"Category","v":"Electronics"},{"k":"Material","v":"Matte black"}] },
+    { "id": "w2", "name": "Flow Minimum", "desc": "Quiet hardware. Heavy clarity.", "imgA": "images/p2_a.png", "imgB": "images/p2_b.png", "meta": [{"k":"Category","v":"Electronics"},{"k":"Feature","v":"CD Playback"}] },
+    { "id": "w3", "name": "Flow X", "desc": "A field, not a stage.", "imgA": "images/p3_a.png", "imgB": "images/p3_b.png", "meta": [{"k":"Category","v":"Gaming"},{"k":"CMF","v":"Dark matte"}] },
+    { "id": "w4", "name": "Flow Wave", "desc": "Carry the field — protection shaped by motion.", "imgA": "images/p4_a.png", "imgB": "images/p4_b.png", "meta": [{"k":"Category","v":"Bag"},{"k":"Style","v":"Orbit ridges"}] },
+    { "id": "w5", "name": "Flow mute", "desc": "Sound has mass — a speaker as gravity source.", "imgA": "images/p5_a.png", "imgB": "images/p5_b.png", "meta": [{"k":"Category","v":"Audio"},{"k":"Driver","v":"Full-range"}] },
+    { "id": "w6", "name": "Flow Flux", "desc": "Designed to move. Built to endure.", "imgA": "images/p6_a.png", "imgB": "images/p6_b.png", "meta": [{"k":"Category","v":"Apparel"},{"k":"Fit","v":"Relaxed"}] }
   ],
   "concepts": [
-    {
-      "id": "c1",
-      "tags": [
-        "Concept",
-        "Hardware"
-      ],
-      "name": "Event Horizon Dock",
-      "desc": "將「插拔、擴充、收納」做成一個無干擾的連續動作，讓設備進入工作狀態像被重力拉入軌道。"
-    },
-    {
-      "id": "c2",
-      "tags": [
-        "System",
-        "Interface"
-      ],
-      "name": "Gravitational UI Field",
-      "desc": "以「場」取代「頁」：資訊密度沿中心聚集，互動回饋低頻、低對比，建立長時間專注的節奏。"
-    },
-    {
-      "id": "c3",
-      "tags": [
-        "Experimental",
-        "Generative"
-      ],
-      "name": "Singularity Visual Engine",
-      "desc": "用生成式「流場」做視覺底層：永遠不完全重複、低頻漂移，成為網站與展示的靜默引力。"
-    }
+    { "id": "c1", "tags": ["Concept","Hardware"], "name": "Event Horizon Dock", "desc": "將「插拔、擴充、收納」做成一個無干擾的連續動作，讓設備進入工作狀態像被重力拉入軌道。" },
+    { "id": "c2", "tags": ["System","Interface"], "name": "Gravitational UI Field", "desc": "以「場」取代「頁」：資訊密度沿中心聚集，互動回饋低頻、低對比，建立長時間專注的節奏。" },
+    { "id": "c3", "tags": ["Experimental","Generative"], "name": "Singularity Visual Engine", "desc": "用生成式「流場」做視覺底層：永遠不完全重複、低頻漂移，成為網站與展示的靜默引力。" }
   ],
   "process": {
     "subtitle": "極簡不是減法，而是把「決策密度」集中到核心。",
     "steps": [
-      {
-        "num": "01",
-        "title": "Field Definition",
-        "desc": "定義「重力中心」：使用者的真正動機。"
-      },
-      {
-        "num": "02",
-        "title": "Orbit Mapping",
-        "desc": "把需求轉成可運行的軌道與節奏。"
-      },
-      {
-        "num": "03",
-        "title": "Prototype",
-        "desc": "用原型測「吸引力」與低干擾回饋。"
-      },
-      {
-        "num": "04",
-        "title": "System",
-        "desc": "收斂成系統：結構、CMF、一致性。"
-      }
+      { "num": "01", "title": "Field Definition", "desc": "定義「重力中心」：使用者的真正動機。" },
+      { "num": "02", "title": "Orbit Mapping", "desc": "把需求轉成可運行的軌道與節奏。" },
+      { "num": "03", "title": "Prototype", "desc": "用原型測「吸引力」與低干擾回饋。" },
+      { "num": "04", "title": "System", "desc": "收斂成系統：結構、CMF、一致性。" }
     ]
   },
   "others": [
-    {
-      "id": "o1",
-      "src": "other_1.png",
-      "alt": "UltiBase Sound"
-    },
-    {
-      "id": "o2",
-      "src": "other_2.png",
-      "alt": "Mac it flow"
-    },
-    {
-      "id": "o3",
-      "src": "other_3.png",
-      "alt": "Fluence clothes"
-    }
+    { "id": "o1", "src": "images/other_1.png", "alt": "Other work 1" },
+    { "id": "o2", "src": "images/other_2.png", "alt": "Other work 2" },
+    { "id": "o3", "src": "images/other_3.png", "alt": "Other work 3" }
   ],
   "about": {
     "positioning": "Flow Studio builds product experiences that feel inevitable—where each interaction is a small continuation of the last.",
@@ -180,28 +49,52 @@
   },
   "ceramics": [
     {
-      "id": "cer1773982590717",
-      "name": "PortEry 1",
-      "year": "2026",
-      "img": "po1_a.png",
-      "desc": "",
-      "tags": []
+      "id": "cer1",
+      "name": "Porttery 1",
+      "img": "images/pt1_a.png",
+      "tags": ["陶藝"],
+      "year": "2024",
+      "desc": "As a port to flow"
     },
     {
-      "id": "cer1773994189324",
-      "name": "PortEry 2",
-      "year": "2026",
-      "img": "po2_a",
-      "desc": "",
-      "tags": []
+      "id": "cer2",
+      "name": "Refined business style",
+      "img": "images/pt1_b.png",
+      "tags": ["陶藝"],
+      "year": "2024",
+      "desc": "Business style mug"
     },
     {
-      "id": "cer1773994220135",
-      "name": "PortEry 3",
-      "year": "2030",
-      "img": "po3_a",
-      "desc": "",
-      "tags": []
+      "id": "cer3",
+      "name": "Porttery 3",
+      "img": "images/pt2_a.png",
+      "tags": ["器皿"],
+      "year": "2024",
+      "desc": "Study room mug"
+    },
+    {
+      "id": "cer4",
+      "name": "Wabi-sabi style",
+      "img": "images/pt2_b.png",
+      "tags": ["器皿"],
+      "year": "2024",
+      "desc": "Define silent form"
+    },
+    {
+      "id": "cer5",
+      "name": "Porttery 5",
+      "img": "images/pt3_a.png",
+      "tags": ["雕塑"],
+      "year": "2024",
+      "desc": "Teacup"
+    },
+    {
+      "id": "cer6",
+      "name": "Minimalist style",
+      "img": "images/pt3_b.png",
+      "tags": ["雕塑"],
+      "year": "2024",
+      "desc": "Exquisite gift set"
     }
   ],
   "ceramicsPage": {

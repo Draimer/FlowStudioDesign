@@ -825,7 +825,8 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
   }
 
   // 3. 決定使用哪份 ceramics 資料
-  if(D?.ceramics && D.ceramics.length){
+  // ceramics 存在且不為空陣列才使用，否則用預設值
+  if(D?.ceramics && D.ceramics.length > 0){
     CERAMICS = D.ceramics;
   } else {
     CERAMICS = CERAMICS_DEFAULT;
