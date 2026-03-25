@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>PC Builds — Flow Studio</title>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y9JX4Q6JN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1Y9JX4Q6JN');
+  </script>
+
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="apple-touch-icon" href="images/favicon.png">
+
+  <style>
+    :root{
+      --bg0:#050507;
+      --bg1:#0B0B0D;
+      --bg2:#121218;
+      --ink:#E8E8EA;
+      --muted:rgba(232,232,234,.70);
+      --faint:rgba(232,232,234,.12);
+      --line:rgba(232,232,234,.14);
+      --panel:rgba(18,18,24,.62);
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+      --radius:20px;
+      --radius2:28px;
+      --max:1120px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 900px at 50% 20%, #0d0d12 0%, var(--bg1) 45%, var(--bg0) 100%);
+      overflow-x:hidden;
+    }
+
+    /* ─── Magnetic Cursor ────────────────────────────────────── */
+    .cursor-dot{
+      width:6px; height:6px; background:var(--ink);
+      position:fixed; top:0; left:0;
+      pointer-events:none; z-index:9999;
+      border-radius:50%; will-change:transform;
+      transition: width .3s, height .3s, opacity .3s;
+    }
+    .cursor-ring{
+      width:26px; height:26px;
+      border:1px solid rgba(232,232,234,.3);
+      position:fixed; top:0; left:0;
+      pointer-events:none; z-index:9998;
+      border-radius:50%; will-change:transform;
+      transition: width .3s, height .3s, background .3s, border-color .3s;
+    }
+    .cursor-ring.hovered{ width:50px; height:50px; background:rgba(232,232,234,.1); border-color:rgba(232,232,234,.8); }
+    .cursor-dot.hovered{ opacity:0; }
+    @media(pointer:fine){
+      body{ cursor:none; }
+      a, button, .toggle, .pc-card, .filter-btn{ cursor:none; }
+    }
+
+    /* ─── Canvas + Vignette ──────────────────────────────────── */
+    #bg{
+      position:fixed; inset:0; width:100%; height:100%;
+      z-index:-2; opacity:.86;
+      filter:saturate(.85) contrast(1.05);
+    }
+    .vignette{
+      position:fixed; inset:-20%; z-index:-1; pointer-events:none;
+      background:
+        radial-gradient(900px 680px at 50% 20%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(900px 900px at 50% 35%, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 58%, rgba(0,0,0,.82) 100%);
+      mix-blend-mode:screen; opacity:.85; transform:translateZ(0);
+    }
+
+    a{color:inherit; text-decoration:none}
+    .wrap{width:min(var(--max), calc(100% - 48px)); margin:0 auto;}
+
+    /* ─── Nav ────────────────────────────────────────────────── */
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      background:linear-gradient(to bottom, rgba(5,5,7,.65), rgba(5,5,7,.20));
+      border-bottom:1px solid rgba(232,232,234,.08);
+    }
+    .nav{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:16px; padding:14px 0;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      letter-spacing:.18em; text-transform:uppercase;
+      font-weight:600; font-size:12px;
+    }
+    .mark{
+      width:22px; height:22px; border-radius:999px;
+      background:
+        radial-gradient(circle at 55% 45%, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 42%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.95) 0%, rgba(0,0,0,.95) 52%, rgba(255,255,255,.08) 55%, rgba(255,255,255,0) 72%);
+      border:1px solid rgba(232,232,234,.14);
+    }
+    nav{
+      display:flex; align-items:center; gap:18px;
+      font-size:12px; color:var(--muted); letter-spacing:.08em;
+    }
+    nav a{
+      padding:8px 10px; border-radius:999px; border:1px solid transparent;
+      transition:border-color .2s, background .2s, color .2s;
+    }
+    nav a:hover{ color:var(--ink); background:rgba(232,232,234,.04); border-color:rgba(232,232,234,.10); }
+    nav a.active{ color:var(--ink); border-color:rgba(232,232,234,.14); }
+    .chip{ display:flex; gap:10px; align-items:center; }
+    .toggle{
+      display:inline-flex; align-items:center; gap:10px;
+      border:1px solid rgba(232,232,234,.12); background:rgba(18,18,24,.40);
+      padding:8px 12px; border-radius:999px; color:var(--muted);
+      font-size:12px; letter-spacing:.06em; cursor:pointer; user-select:none;
+      transition:background .2s, border-color .2s, color .2s;
+    }
+    .toggle:hover{ background:rgba(18,18,24,.55); color:var(--ink); border-color:rgba(232,232,234,.18); }
+    .dot{ width:8px; height:8px; border-radius:999px; background:rgba(232,232,234,.18); box-shadow:0 0 0 6px rgba(232,232,234,.05); }
+    .dot.on{ background:rgba(232,232,234,.65); }
+
+    /* ─── Page Hero ──────────────────────────────────────────── */
+    .page-hero{
+      padding:80px 0 52px;
+      opacity:0; transform:translateY(16px);
+      animation:heroIn .6s cubic-bezier(.22,.68,0,1.2) forwards .05s;
+    }
+    @keyframes heroIn{ to{ opacity:1; transform:translateY(0); } }
+
+    .kicker{
+      color:var(--muted); font-size:12px; letter-spacing:.24em;
+      text-transform:uppercase; margin:0 0 12px;
+      clip-path:inset(0 100% 0 0);
+      animation:revealX .55s cubic-bezier(.22,.68,0,1.2) forwards .25s;
+    }
+    @keyframes revealX{ to{ clip-path:inset(0 0% 0 0); } }
+
+    h1{
+      margin:0 0 14px; font-weight:520; letter-spacing:-.02em;
+      line-height:1.06; font-size:clamp(36px, 4.5vw, 62px);
+      clip-path:inset(0 0 100% 0);
+      animation:revealY .6s cubic-bezier(.22,.68,0,1.2) forwards .35s;
+    }
+    @keyframes revealY{ to{ clip-path:inset(0 0 0% 0); } }
+
+    .sub{
+      margin:0; max-width:62ch;
+      color:rgba(232,232,234,.78); font-size:16px; line-height:1.7;
+      opacity:0;
+      animation:fadeUp .5s ease forwards .52s;
+    }
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(10px); }
+      to{   opacity:1; transform:translateY(0); }
+    }
+
+    /* ─── Filter bar ─────────────────────────────────────────── */
+    .filter-bar{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      padding:18px 0; border-bottom:1px solid rgba(232,232,234,.08);
+      margin-bottom:36px;
+      opacity:0;
+      animation:fadeUp .5s ease forwards .62s;
+    }
+    .filter-label{
+      font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+      color:rgba(232,232,234,.35); margin-right:4px;
+    }
+    .filter-btn{
+      padding:6px 14px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.10);
+      background:rgba(232,232,234,.03);
+      color:rgba(232,232,234,.60);
+      font-size:11px; letter-spacing:.10em; text-transform:uppercase;
+      cursor:pointer; font-family:inherit;
+      transition:border-color .2s, color .2s, background .2s, transform .15s;
+    }
+    .filter-btn:hover{ border-color:rgba(232,232,234,.18); color:var(--ink); background:rgba(232,232,234,.06); transform:translateY(-1px); }
+    .filter-btn.on{ border-color:rgba(232,232,234,.26); color:var(--ink); background:rgba(232,232,234,.08); }
+
+    /* ─── PC Grid ────────────────────────────────────────────── */
+    .pc-grid{
+      display:grid;
+      grid-template-columns:repeat(12, 1fr);
+      gap:14px;
+      margin-bottom:60px;
+    }
+
+    /* 카드 사이즈 패턴: 큰건 span 8, 나머지 span 4 → 첫 카드 크게 */
+    .pc-card{
+      grid-column:span 6;
+      border-radius:var(--radius2);
+      border:1px solid rgba(232,232,234,.10);
+      background:linear-gradient(180deg, rgba(18,18,24,.55), rgba(18,18,24,.20));
+      overflow:hidden; position:relative;
+      cursor:pointer;
+      opacity:0; transform:translateY(20px) scale(.98);
+      transition:
+        opacity .45s cubic-bezier(.22,.68,0,1.2),
+        transform .45s cubic-bezier(.22,.68,0,1.2),
+        border-color .22s ease;
+    }
+    .pc-card.visible{ opacity:1; transform:translateY(0) scale(1); }
+    .pc-card.exiting{ opacity:0; transform:translateY(-8px) scale(.97); transition:opacity .22s, transform .22s; pointer-events:none; }
+    .pc-card:hover{ border-color:rgba(232,232,234,.22); }
+
+    /* 첫번째 카드 wider */
+    .pc-card.wide{ grid-column:span 12; }
+    .pc-card.med{  grid-column:span 4; }
+
+    /* Image */
+    .pc-card .img-wrap{
+      width:100%; aspect-ratio:16/10;
+      background:rgba(0,0,0,.4); overflow:hidden; position:relative;
+    }
+    .pc-card.wide .img-wrap{ aspect-ratio:21/9; }
+    .pc-card img{
+      width:100%; height:100%; object-fit:cover; display:block;
+      filter:saturate(.88) contrast(1.04);
+      transition:transform .6s cubic-bezier(.22,.68,0,1.2), filter .4s ease;
+    }
+    .pc-card:hover img{ transform:scale(1.05); filter:saturate(.96) contrast(1.06); }
+
+    /* Caption slide-up (same as ceramics) */
+    .pc-cap{
+      position:absolute; inset:auto 0 0 0;
+      padding:56px 20px 18px;
+      background:linear-gradient(to top, rgba(5,5,7,.94) 0%, rgba(5,5,7,.70) 45%, rgba(5,5,7,0) 100%);
+      transform:translateY(calc(100% - 44px));
+      transition:transform .4s cubic-bezier(.22,.68,0,1.2);
+    }
+    .pc-card.wide .pc-cap{ transform:translateY(calc(100% - 48px)); }
+    .pc-card:hover .pc-cap{ transform:translateY(0); }
+
+    .pc-name{
+      font-size:14px; font-weight:560; letter-spacing:.06em;
+      text-transform:uppercase; margin-bottom:7px;
+    }
+    .pc-card.wide .pc-name{ font-size:16px; }
+
+    .pc-tags{
+      display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px;
+      opacity:0; transform:translateY(5px);
+      transition:opacity .3s ease .06s, transform .3s ease .06s;
+    }
+    .pc-card:hover .pc-tags{ opacity:1; transform:translateY(0); }
+    .pc-tag{
+      font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+      color:rgba(232,232,234,.65); border:1px solid rgba(232,232,234,.14);
+      border-radius:999px; padding:3px 9px; background:rgba(232,232,234,.05);
+    }
+
+    /* Spec pills row */
+    .pc-specs{
+      display:flex; gap:6px; flex-wrap:wrap;
+      opacity:0; transform:translateY(5px);
+      transition:opacity .3s ease .12s, transform .3s ease .12s;
+    }
+    .pc-card:hover .pc-specs{ opacity:1; transform:translateY(0); }
+    .spec-pill{
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:11px; color:rgba(232,232,234,.72);
+      border:1px solid rgba(232,232,234,.10);
+      border-radius:999px; padding:4px 10px;
+      background:rgba(18,18,24,.55);
+      letter-spacing:.04em;
+    }
+    .spec-pill svg{ opacity:.55; flex-shrink:0; }
+
+    /* ─── Service strip ──────────────────────────────────────── */
+    .service-strip{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-bottom:56px;
+      opacity:0; transform:translateY(14px);
+      animation:fadeUp .55s ease forwards .7s;
+    }
+    .srv{
+      border-radius:var(--radius2);
+      border:1px solid rgba(232,232,234,.10);
+      background:linear-gradient(180deg, rgba(18,18,24,.52), rgba(18,18,24,.20));
+      padding:20px 22px 18px;
+      position:relative; overflow:hidden;
+    }
+    .srv:before{
+      content:""; position:absolute; inset:-45%;
+      background:
+        radial-gradient(520px 320px at 70% 20%, rgba(255,255,255,.09) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(520px 340px at 20% 85%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 58%);
+      opacity:.38; pointer-events:none;
+    }
+    .srv-icon{
+      width:36px; height:36px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.14);
+      background:rgba(232,232,234,.04);
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:14px; position:relative;
+    }
+    .srv h4{
+      margin:0 0 8px; font-size:13px; font-weight:560;
+      letter-spacing:.06em; text-transform:uppercase; position:relative;
+    }
+    .srv p{
+      margin:0; font-size:13px; color:rgba(232,232,234,.65);
+      line-height:1.7; position:relative;
+    }
+
+    /* ─── CTA Section ────────────────────────────────────────── */
+    .cta-section{
+      padding:72px 0 88px;
+      text-align:center;
+      border-top:1px solid rgba(232,232,234,.08);
+      position:relative;
+      opacity:0; transform:translateY(14px);
+      animation:fadeUp .55s ease forwards .8s;
+    }
+    .cta-label{
+      font-size:12px; letter-spacing:.28em; text-transform:uppercase;
+      color:var(--muted); margin:0 0 18px;
+    }
+    .cta-heading{
+      font-size:clamp(28px, 3.5vw, 48px);
+      font-weight:520; letter-spacing:-.02em; line-height:1.1;
+      margin:0 0 16px;
+    }
+    .cta-sub{
+      font-size:15px; color:rgba(232,232,234,.65); line-height:1.7;
+      max-width:50ch; margin:0 auto 36px;
+    }
+    /* 大 CTA 按鈕 */
+    .cta-btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:12px;
+      padding:18px 44px;
+      border-radius:999px;
+      border:1px solid rgba(232,232,234,.26);
+      background:rgba(232,232,234,.06);
+      color:var(--ink);
+      font-size:15px; letter-spacing:.14em; text-transform:uppercase;
+      font-weight:520;
+      cursor:pointer; font-family:inherit;
+      transition:transform .2s cubic-bezier(.22,.68,0,1.2), background .2s, border-color .2s, box-shadow .2s;
+      position:relative; overflow:hidden;
+    }
+    .cta-btn:before{
+      content:"";
+      position:absolute; inset:0;
+      background:radial-gradient(600px 300px at 50% 120%, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 60%);
+      opacity:0; transition:opacity .3s;
+    }
+    .cta-btn:hover{
+      transform:translateY(-3px) scale(1.01);
+      background:rgba(232,232,234,.10);
+      border-color:rgba(232,232,234,.40);
+      box-shadow:0 18px 48px rgba(0,0,0,.4), 0 0 0 1px rgba(232,232,234,.08);
+    }
+    .cta-btn:hover:before{ opacity:1; }
+    .cta-btn:active{ transform:translateY(-1px) scale(.99); }
+    .cta-arrow{
+      display:inline-flex; width:28px; height:28px;
+      border:1px solid rgba(232,232,234,.20); border-radius:999px;
+      align-items:center; justify-content:center;
+      transition:transform .2s ease;
+    }
+    .cta-btn:hover .cta-arrow{ transform:rotate(45deg); }
+
+    /* 次要聯絡方式 */
+    .cta-alts{
+      margin-top:22px;
+      display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+    }
+    .alt-link{
+      display:inline-flex; align-items:center; gap:7px;
+      padding:8px 16px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.12);
+      background:rgba(232,232,234,.03);
+      color:rgba(232,232,234,.70); font-size:12px; letter-spacing:.08em;
+      transition:background .2s, border-color .2s, color .2s;
+    }
+    .alt-link:hover{ background:rgba(232,232,234,.07); border-color:rgba(232,232,234,.20); color:var(--ink); }
+
+    /* ─── Contact Lightbox ───────────────────────────────────── */
+    .contact-lb{
+      position:fixed; inset:0; z-index:100;
+      background:rgba(5,5,7,.94);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none;
+      transition:opacity .28s cubic-bezier(.22,.68,0,1.2);
+    }
+    .contact-lb.open{ opacity:1; pointer-events:all; }
+
+    .contact-inner{
+      display:flex; flex-direction:column; align-items:center; gap:18px;
+      transform:scale(.94) translateY(12px);
+      transition:transform .32s cubic-bezier(.22,.68,0,1.2);
+      max-width:min(420px, calc(100vw - 48px));
+      width:100%;
+    }
+    .contact-lb.open .contact-inner{ transform:scale(1) translateY(0); }
+
+    /* 聯絡卡片 */
+    .contact-card{
+      width:100%;
+      border-radius:var(--radius2);
+      border:1px solid rgba(232,232,234,.12);
+      background:linear-gradient(180deg, rgba(18,18,24,.78), rgba(18,18,24,.55));
+      padding:28px;
+      box-shadow:0 32px 80px rgba(0,0,0,.7);
+      position:relative; overflow:hidden;
+    }
+    .contact-card:before{
+      content:""; position:absolute; inset:-40%;
+      background:
+        radial-gradient(500px 300px at 65% 15%, rgba(255,255,255,.09) 0%, rgba(255,255,255,0) 55%),
+        radial-gradient(400px 350px at 25% 85%, rgba(255,255,255,.06) 0%, rgba(255,255,255,0) 58%);
+      opacity:.5; pointer-events:none;
+    }
+
+    /* 大頭照 + 名字 */
+    .contact-profile{
+      display:flex; align-items:center; gap:16px;
+      margin-bottom:22px; position:relative;
+    }
+    .contact-avatar{
+      width:64px; height:64px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.16);
+      overflow:hidden; flex-shrink:0;
+      background:rgba(18,18,24,.6);
+    }
+    .contact-avatar img{
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    /* 如果還沒有大頭照，顯示 placeholder 文字 */
+    .contact-avatar-placeholder{
+      width:100%; height:100%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; color:rgba(232,232,234,.4);
+      font-weight:300; letter-spacing:.02em;
+    }
+    .contact-name-block{ flex:1; }
+    .contact-name{
+      font-size:16px; font-weight:560; letter-spacing:.04em; margin-bottom:3px;
+    }
+    .contact-role{
+      font-size:12px; color:rgba(232,232,234,.50); letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+
+    /* QR Code 區 */
+    .contact-qr-wrap{
+      position:relative;
+      width:100%; border-radius:var(--radius);
+      border:1px solid rgba(232,232,234,.10);
+      background:rgba(5,5,7,.4);
+      overflow:hidden;
+      aspect-ratio:1/1;
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:16px;
+    }
+    .contact-qr-wrap img{
+      width:100%; height:100%; object-fit:contain; display:block;
+    }
+    /* 如果圖片是 Line 聯絡卡（整張），直接滿版顯示 */
+    .contact-qr-wrap.full-card{
+      aspect-ratio:auto;
+      background:transparent; border-color:transparent;
+    }
+    .contact-qr-wrap.full-card img{
+      border-radius:var(--radius);
+      border:1px solid rgba(232,232,234,.10);
+    }
+
+    .contact-line-id{
+      font-size:13px; color:rgba(232,232,234,.72); text-align:center;
+      letter-spacing:.08em; position:relative;
+    }
+    .contact-line-id span{
+      color:var(--ink); font-weight:560;
+    }
+    .contact-hint{
+      margin-top:6px;
+      font-size:11px; color:rgba(232,232,234,.36);
+      text-align:center; letter-spacing:.06em; position:relative;
+    }
+
+    .lb-close{
+      position:fixed; top:20px; right:20px;
+      width:38px; height:38px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.14); background:rgba(18,18,24,.6);
+      color:var(--muted); font-size:18px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(10px);
+      transition:background .15s, color .15s, transform .15s;
+      z-index:101;
+    }
+    .lb-close:hover{ background:rgba(232,232,234,.10); color:var(--ink); transform:scale(1.08); }
+
+    /* ─── Footer ─────────────────────────────────────────────── */
+    footer{
+      padding:40px 0 54px;
+      color:rgba(232,232,234,.55); font-size:12px;
+      border-top:1px solid rgba(232,232,234,.08);
+    }
+
+    /* ─── Music Player ───────────────────────────────────────── */
+    .musicPlayer{ position:fixed; right:18px; bottom:18px; z-index:20; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+    .musicPanel{
+      display:flex; align-items:center; gap:10px;
+      background:rgba(18,18,24,.72); border:1px solid rgba(232,232,234,.12);
+      border-radius:999px; padding:8px 14px 8px 10px;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      opacity:0; transform:translateY(6px) scale(.97); pointer-events:none;
+      transition:opacity .2s, transform .2s;
+    }
+    .musicPanel.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+    .musicPlayBtn{
+      appearance:none; width:28px; height:28px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.16); background:rgba(232,232,234,.06);
+      color:rgba(232,232,234,.86); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .15s, border-color .15s; flex-shrink:0;
+    }
+    .musicPlayBtn:hover{ background:rgba(232,232,234,.12); border-color:rgba(232,232,234,.24); }
+    .vol-icon{ color:rgba(232,232,234,.45); flex-shrink:0; }
+    .vol-slider{
+      -webkit-appearance:none; appearance:none;
+      width:80px; height:2px; background:rgba(232,232,234,.16);
+      border-radius:999px; outline:none; cursor:pointer;
+    }
+    .vol-slider::-webkit-slider-thumb{
+      -webkit-appearance:none; width:12px; height:12px;
+      border-radius:999px; background:rgba(232,232,234,.80); cursor:pointer;
+      transition:background .15s, transform .15s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover{ background:rgba(232,232,234,1); transform:scale(1.2); }
+    .vol-slider::-moz-range-thumb{ width:12px; height:12px; border-radius:999px; background:rgba(232,232,234,.80); border:none; cursor:pointer; }
+    .musicToggleBtn{
+      appearance:none; border:1px solid rgba(232,232,234,.12);
+      background:rgba(18,18,24,.55); color:rgba(232,232,234,.72);
+      width:36px; height:36px; border-radius:999px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .2s, border-color .2s, transform .15s;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    }
+    .musicToggleBtn:hover{ background:rgba(18,18,24,.75); border-color:rgba(232,232,234,.20); transform:translateY(-1px); }
+
+    /* ─── Responsive ─────────────────────────────────────────── */
+    @media(max-width:960px){
+      .pc-card{ grid-column:span 6; }
+      .pc-card.wide{ grid-column:span 12; }
+      .pc-card.med{ grid-column:span 6; }
+      .service-strip{ grid-template-columns:1fr; }
+    }
+    @media(max-width:920px){ nav{ display:none; } }
+    @media(max-width:640px){
+      .wrap{ width:min(var(--max), calc(100% - 28px)); }
+      .page-hero{ padding:60px 0 40px; }
+      .pc-card, .pc-card.wide, .pc-card.med{ grid-column:span 12; }
+      .pc-card.wide .img-wrap{ aspect-ratio:4/3; }
+      .cta-btn{ padding:16px 28px; font-size:13px; }
+    }
+
+    @media(prefers-reduced-motion:reduce){
+      .pc-card, .kicker, h1, .sub, .filter-bar, .page-hero, .service-strip, .cta-section{
+        animation:none !important; transition:none !important;
+      }
+      .pc-card{ opacity:1; transform:none; }
+      .pc-cap{ transform:none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
+
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html" aria-label="Flow Studio — Home">
+      <div class="mark" aria-hidden="true"></div>
+      <div>Flow Studio</div>
+    </a>
+    <nav aria-label="Primary">
+      <a href="index.html#works">Works</a>
+      <a href="index.html#process">Process</a>
+      <a href="index.html#about">About</a>
+      <a href="ceramics.html">Ceramics</a>
+      <a href="pc-builds.html" class="active">PC Builds ↗</a>
+    </nav>
+    <div class="chip">
+      <button class="toggle" id="motionToggle" type="button" aria-pressed="true">
+        <span class="dot on" id="motionDot" aria-hidden="true"></span>
+        Motion
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- Hero -->
+    <div class="page-hero">
+      <p class="kicker">Custom Build · Performance · Every Watt Counts</p>
+      <h1>為你打造，不將就的電腦。</h1>
+      <p class="sub">從預算到用途，每一台都是針對使用者量身配置——電競、剪輯、或只是想要一台不卡的機器。</p>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar" id="filter-bar">
+      <span class="filter-label">Filter</span>
+      <button class="filter-btn on" data-filter="all">All</button>
+    </div>
+
+    <!-- PC Grid -->
+    <div class="pc-grid" id="pc-grid">
+      <div style="grid-column:span 12; text-align:center; padding:60px 0; color:rgba(232,232,234,.2); font-size:13px; letter-spacing:.1em;">
+        載入中…
+      </div>
+    </div>
+
+    <!-- Service Strip -->
+    <div class="service-strip">
+      <div class="srv">
+        <div class="srv-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          </svg>
+        </div>
+        <h4>需求諮詢</h4>
+        <p>告訴我你的預算和用途，我幫你規劃最合適的配置，不多買也不少買。</p>
+      </div>
+      <div class="srv">
+        <div class="srv-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+            <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+          </svg>
+        </div>
+        <h4>選料組裝</h4>
+        <p>親自選零件、比價、組裝、測試壓力，確保穩定性後才交機。</p>
+      </div>
+      <div class="srv">
+        <div class="srv-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h4>售後支援</h4>
+        <p>交機後如有疑問隨時聯絡，軟體問題遠端協助，硬體問題現場處理。</p>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+
+  <!-- CTA Section -->
+  <div class="cta-section">
+    <div class="wrap">
+      <p class="cta-label">Custom PC Build</p>
+      <h2 class="cta-heading">有想法了嗎？<br>跟我說你的需求。</h2>
+      <p class="cta-sub">不管是電競、剪輯工作站、還是日常用機，預算從幾萬到幾十萬都可以聊。</p>
+
+      <button class="cta-btn" id="openContact" aria-label="開啟聯絡方式">
+        <span>聯絡我們</span>
+        <span class="cta-arrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+          </svg>
+        </span>
+      </button>
+
+      <div class="cta-alts">
+        <a class="alt-link" href="https://www.instagram.com/kindredaimer/?hl=zh-tw" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          @kindredaimer
+        </a>
+        <a class="alt-link" href="mailto:draimer@flowstudio.design">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+          Email
+        </a>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Contact Lightbox -->
+<div class="contact-lb" id="contact-lb" aria-modal="true" role="dialog" aria-label="聯絡方式">
+  <button class="lb-close" id="lb-close" aria-label="關閉">×</button>
+  <div class="contact-inner">
+    <div class="contact-card">
+
+      <!-- 大頭照 + 名字 -->
+      <div class="contact-profile">
+        <div class="contact-avatar" id="contact-avatar">
+          <!--
+            ★ 換大頭照：把下方 img 標籤取消註解，把 src 換成你的圖片路徑
+            <img src="images/avatar.jpg" alt="施奕廷 Draimer">
+          -->
+          <div class="contact-avatar-placeholder">D</div>
+        </div>
+        <div class="contact-name-block">
+          <div class="contact-name">施奕廷 Draimer</div>
+          <div class="contact-role">PC Build · Flow Studio</div>
+        </div>
+      </div>
+
+      <!--
+        ★ 聯絡卡片圖片設定（三種方式選一種）：
+
+        【方式 A】整張 Line 聯絡卡圖（推薦）
+        把 class="contact-qr-wrap" 改成 class="contact-qr-wrap full-card"
+        把 src 換成你的圖片路徑，這張圖會滿版顯示
+
+        【方式 B】只有 QR Code 圖
+        直接換 src 就好，保持 class="contact-qr-wrap"
+
+        【方式 C】沒有圖（用純文字 Line ID）
+        刪掉整個 .contact-qr-wrap，只留下面的 contact-line-id
+      -->
+      <div class="contact-qr-wrap" id="contact-qr-wrap">
+        <img
+          src="images/line_contact.png"
+          alt="Line QR Code"
+          id="contact-qr-img"
+          onerror="this.closest('.contact-qr-wrap').style.display='none'"
+        >
+      </div>
+
+      <div class="contact-line-id">Line ID：<span id="contact-line-id">@7792687</span></div>
+      <div class="contact-hint">掃描 QR Code 或搜尋 ID 加入好友</div>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <span>© <span id="year"></span> Flow Studio — field-driven minimalism.</span>
+      <span style="font-size:11px; color:rgba(232,232,234,.38); letter-spacing:.06em;">
+        本網站所有內容，包含文字、圖像、設計及作品，均受著作權法保護。未經授權，不得以任何形式重製、散佈或使用。All rights reserved.
+      </span>
+    </div>
+  </div>
+</footer>
+
+<audio id="bgm" src="music.mp3" loop autoplay></audio>
+<div class="musicPlayer" aria-label="Music controls">
+  <div class="musicPanel" id="musicPanel">
+    <button class="musicPlayBtn" id="musicPlayBtn" aria-label="Play / Pause">
+      <svg id="ico-pause" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>
+      <svg id="ico-play"  width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+    </button>
+    <svg class="vol-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path id="vol-wave1" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path id="vol-wave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+    <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.01" value="0.65" aria-label="Volume">
+  </div>
+  <button class="musicToggleBtn" id="musicToggleBtn" aria-label="Music settings">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+// ── Year ──────────────────────────────────────────────────────
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// ── Motion Toggle ─────────────────────────────────────────────
+const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+let motionEnabled = !prefersReduced;
+const motionToggle = document.getElementById('motionToggle');
+const motionDot    = document.getElementById('motionDot');
+function syncMotionUI(){
+  motionToggle.setAttribute('aria-pressed', String(motionEnabled));
+  motionDot.classList.toggle('on', motionEnabled);
+}
+syncMotionUI();
+window.addEventListener('load', () => { if(motionEnabled) start(); });
+motionToggle.addEventListener('click', () => {
+  motionEnabled = !motionEnabled; syncMotionUI();
+  if(motionEnabled) start(); else stop();
+});
+
+// ── Music Player ──────────────────────────────────────────────
+const bgm = document.getElementById('bgm');
+const musicPanel = document.getElementById('musicPanel');
+const musicToggleBtn = document.getElementById('musicToggleBtn');
+const musicPlayBtn = document.getElementById('musicPlayBtn');
+const volSlider = document.getElementById('volSlider');
+const icoPause = document.getElementById('ico-pause');
+const icoPlay  = document.getElementById('ico-play');
+const volWave1 = document.getElementById('vol-wave1');
+const volWave2 = document.getElementById('vol-wave2');
+let panelOpen = false, hasInteracted = false;
+async function tryPlay(){ try{ await bgm.play(); }catch(e){} }
+function syncPlayIcons(){ const p=!bgm.paused; icoPause.style.display=p?'':'none'; icoPlay.style.display=p?'none':''; }
+function syncVolIcons(v){ volWave1.style.opacity=v>0?'1':'0.15'; volWave2.style.opacity=v>0.3?'1':'0.15'; }
+bgm.volume=0.65; volSlider.value=0.65;
+tryPlay().then(syncPlayIcons);
+function onFirstInteraction(){
+  if(hasInteracted) return; hasInteracted=true;
+  if(bgm.paused) tryPlay().then(syncPlayIcons);
+  document.removeEventListener('click', onFirstInteraction);
+  document.removeEventListener('keydown', onFirstInteraction);
+  document.removeEventListener('touchstart', onFirstInteraction);
+}
+document.addEventListener('click', onFirstInteraction);
+document.addEventListener('keydown', onFirstInteraction);
+document.addEventListener('touchstart', onFirstInteraction);
+musicToggleBtn.addEventListener('click', ()=>{ panelOpen=!panelOpen; musicPanel.classList.toggle('open',panelOpen); });
+document.addEventListener('click', e=>{ if(panelOpen&&!e.target.closest('.musicPlayer')){ panelOpen=false; musicPanel.classList.remove('open'); } });
+musicPlayBtn.addEventListener('click', ()=>{ if(bgm.paused)tryPlay(); else bgm.pause(); setTimeout(syncPlayIcons,80); });
+volSlider.addEventListener('input', ()=>{
+  const v=parseFloat(volSlider.value); bgm.volume=v; syncVolIcons(v);
+  if(v>0&&bgm.paused){tryPlay();setTimeout(syncPlayIcons,80);}
+  if(v===0&&!bgm.paused){bgm.pause();setTimeout(syncPlayIcons,80);}
+});
+bgm.addEventListener('play', syncPlayIcons);
+bgm.addEventListener('pause', syncPlayIcons);
+
+// ── Canvas ────────────────────────────────────────────────────
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d', {alpha:true});
+let w=0, h=0, dpr=1;
+function resize(){
+  dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+  w=Math.floor(window.innerWidth); h=Math.floor(window.innerHeight);
+  canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
+  canvas.style.width=w+'px'; canvas.style.height=h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize', resize, {passive:true});
+resize();
+const center={x:()=>w*0.52, y:()=>h*0.30};
+const particles=[];
+const COUNT=140;
+function rand(a,b){return a+Math.random()*(b-a);}
+function init(){
+  particles.length=0;
+  for(let i=0;i<COUNT;i++){
+    const r=rand(Math.min(w,h)*0.10,Math.min(w,h)*0.60);
+    particles.push({r, ang:rand(0,Math.PI*2), speed:rand(0.00025,0.0012),
+      phase:rand(0,Math.PI*2), wobble:rand(0.6,1.6), alpha:rand(0.08,0.22), width:rand(0.6,1.4)});
+  }
+}
+init();
+let t=0, raf=0;
+function draw(){
+  t+=1;
+  ctx.fillStyle='rgba(5,5,7,0.10)'; ctx.fillRect(0,0,w,h);
+  const cx=center.x(), cy=center.y(), time=t*0.008;
+  const horizonR=Math.min(w,h)*0.12;
+  const g=ctx.createRadialGradient(cx,cy,horizonR*0.15,cx,cy,horizonR*1.35);
+  g.addColorStop(0,'rgba(255,255,255,0.06)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,horizonR*1.35,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.90)'; ctx.beginPath(); ctx.arc(cx,cy,horizonR*0.70,0,Math.PI*2); ctx.fill();
+  for(const p of particles){
+    const pull=1/Math.max(0.35,(p.r/(Math.min(w,h)*0.55)));
+    const wave=Math.sin(time*0.8+p.phase)*(p.wobble*6);
+    p.ang+=p.speed*(0.7+pull*0.55);
+    p.r+=(Math.sin(time*0.55+p.phase)*0.12);
+    const r=p.r+wave;
+    const x=cx+Math.cos(p.ang)*r, y=cy+Math.sin(p.ang)*r*0.72;
+    const x2=cx+Math.cos(p.ang-0.02)*(r+8), y2=cy+Math.sin(p.ang-0.02)*(r+8)*0.72;
+    ctx.strokeStyle=`rgba(232,232,234,${p.alpha})`; ctx.lineWidth=p.width;
+    ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x,y); ctx.stroke();
+  }
+  raf=requestAnimationFrame(draw);
+}
+function start(){ stop(); ctx.fillStyle='rgba(5,5,7,1)'; ctx.fillRect(0,0,w,h); raf=requestAnimationFrame(draw); }
+function stop(){ if(raf) cancelAnimationFrame(raf); raf=0; }
+
+// ── Contact Lightbox ──────────────────────────────────────────
+const contactLb = document.getElementById('contact-lb');
+document.getElementById('openContact').addEventListener('click', ()=>{
+  contactLb.classList.add('open');
+  document.body.style.overflow='hidden';
+  document.addEventListener('keydown', lbKey);
+});
+document.getElementById('lb-close').addEventListener('click', closeLb);
+contactLb.addEventListener('click', e=>{ if(e.target===contactLb) closeLb(); });
+function closeLb(){
+  contactLb.classList.remove('open');
+  document.body.style.overflow='';
+  document.removeEventListener('keydown', lbKey);
+}
+function lbKey(e){ if(e.key==='Escape') closeLb(); }
+
+// ── PC Builds Data ────────────────────────────────────────────
+/*
+  ★ 修改方式：
+  在下方 PC_BUILDS 陣列裡，每個物件代表一台電腦。
+  欄位說明：
+    id       : 唯一識別碼（隨便取）
+    name     : 這台電腦的名字（例如 "電競旗艦 RTX R090"）
+    img      : 圖片路徑（例如 "images/pc1.jpg"），放在 images 資料夾
+    tags     : 分類標籤陣列，用於 Filter（例如 ["電競", "高階"]）
+    year     : 完成年份
+    budget   : 預算區間（例如 "NT$ 80,000"）
+    specs    : 規格陣列，每個物件有 icon 和 text
+    wide     : true = 這張卡佔滿整行（適合第一張主視覺用）
+    med      : true = 這張卡佔 1/3 寬（適合小作品）
+*/
+
+const PC_BUILDS = [
+  {
+    id: 'pc1',
+    name: '電競旗艦 Build',
+    img: 'images/pc1.jpg',          // ← 換成你的圖片
+    tags: ['電競', '高階'],
+    year: '2026',
+    budget: 'NT$ 265000+',
+    wide: true,
+    specs: [
+      { icon: 'cpu',  text: 'Ryzen 9 9950X3D' },
+      { icon: 'gpu',  text: 'RTX 5090 32G LIGHTNING Z' },
+      { icon: 'ram',  text: '64GB DDR5 5600' },
+      { icon: 'ssd',  text: '2TB PCIe 5.0 NVMe' },
+    ]
+  },
+  {
+    id: 'pc2',
+    name: '高階電競 Build',
+    img: 'images/pc2.jpg',          // ← 換成你的圖片
+    tags: ['電競', '高階'],
+    year: '2024',
+    budget: 'NT$ 75000',
+    specs: [
+      { icon: 'cpu',  text: 'R9 9850X3D' },
+      { icon: 'gpu',  text: 'RTX 5070Ti' },
+      { icon: 'ram',  text: '32GB DDR5 5600' },
+      { icon: 'ssd',  text: '2TB PCIe 4.0 NVMe' },
+    ]
+  },
+  {
+    id: 'pc3',
+    name: '剪輯工作站 Build',
+    img: 'images/pc3.jpg',          // ← 換成你的圖片
+    tags: ['工作站', '高階'],
+    year: '2024',
+    budget: 'NT$ 60,000',
+    specs: [
+      { icon: 'cpu',  text: 'AMD Ryzen 9 7950X' },
+      { icon: 'gpu',  text: 'RTX 4080 16G' },
+      { icon: 'ram',  text: '128GB DDR5 5200' },
+      { icon: 'ssd',  text: '4TB PCIe 4.0 NVMe' },
+    ]
+  },
+  {
+    id: 'pc4',
+    name: '入門遊戲 Build',
+    img: 'images/pc4.jpg',          // ← 換成你的圖片
+    tags: ['電競', '入門'],
+    year: '2023',
+    budget: 'NT$ 25,000',
+    specs: [
+      { icon: 'cpu',  text: 'Intel Core i5-13400F' },
+      { icon: 'gpu',  text: 'RTX 4060' },
+      { icon: 'ram',  text: '16GB DDR4 3200' },
+      { icon: 'ssd',  text: '1TB PCIe 3.0 NVMe' },
+    ]
+  },
+  {
+    id: 'pc5',
+    name: 'AMD 全紅 Build',
+    img: 'images/pc5.jpg',          // ← 換成你的圖片
+    tags: ['電競', '中階'],
+    year: '2023',
+    budget: 'NT$ 45,000',
+    specs: [
+      { icon: 'cpu',  text: 'AMD Ryzen 7 7800X3D' },
+      { icon: 'gpu',  text: 'RX 7900 XTX' },
+      { icon: 'ram',  text: '32GB DDR5 6000' },
+      { icon: 'ssd',  text: '2TB PCIe 4.0 NVMe' },
+    ]
+  },
+  {
+    id: 'pc6',
+    name: '靜音工作 Build',
+    img: 'images/pc6.jpg',          // ← 換成你的圖片
+    tags: ['工作站', '中階'],
+    year: '2023',
+    budget: 'NT$ 35,000',
+    specs: [
+      { icon: 'cpu',  text: 'Intel Core i7-13700' },
+      { icon: 'gpu',  text: 'RTX 4060 Ti' },
+      { icon: 'ram',  text: '32GB DDR5 4800' },
+      { icon: 'ssd',  text: '1TB + 2TB NVMe' },
+    ]
+  },
+];
+
+// 規格 icon SVG 對照表
+function specIcon(type){
+  const icons = {
+    cpu: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v2M15 2v2M9 20v2M15 20v2M2 9h2M2 15h2M20 9h2M20 15h2"/></svg>`,
+    gpu: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 17v2M10 17v2M14 17v2M18 17v2M6 5v2M18 5v2"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/></svg>`,
+    ram: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="6" width="20" height="12" rx="1"/><path d="M6 6V4M9 6V4M12 6V4M15 6V4M18 6V4"/></svg>`,
+    ssd: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="17" cy="12" r="2"/><path d="M6 9h6M6 12h5M6 15h4"/></svg>`,
+  };
+  return icons[type] || icons.cpu;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Filter ────────────────────────────────────────────────────
+let activeFilter = 'all';
+
+function buildFilters(){
+  const tags = new Set();
+  PC_BUILDS.forEach(p => (p.tags||[]).forEach(t => tags.add(t)));
+  const bar = document.getElementById('filter-bar');
+  bar.innerHTML = `<span class="filter-label">Filter</span>
+    <button class="filter-btn on" data-filter="all">All</button>
+    ${[...tags].map(t=>`<button class="filter-btn" data-filter="${esc(t)}">${esc(t)}</button>`).join('')}`;
+  bar.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.filter === activeFilter) return;
+      bar.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+      btn.classList.add('on');
+      activeFilter = btn.dataset.filter;
+      filterWithTransition(activeFilter);
+    });
+  });
+}
+
+function filterWithTransition(filter){
+  document.querySelectorAll('#pc-grid .pc-card').forEach(el=>el.classList.add('exiting'));
+  setTimeout(()=>renderGrid(filter), 230);
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderGrid(filter){
+  const grid = document.getElementById('pc-grid');
+  const list = filter==='all' ? PC_BUILDS : PC_BUILDS.filter(p=>(p.tags||[]).includes(filter));
+
+  if(!list.length){
+    grid.innerHTML = `<div style="grid-column:span 12;text-align:center;padding:60px 0;color:rgba(232,232,234,.22);font-size:13px;letter-spacing:.1em;">沒有符合的作品</div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map((p,i)=>`
+    <div class="pc-card${p.wide?' wide':p.med?' med':''}">
+      <div class="img-wrap">
+        <img
+          src="${esc(p.img)}"
+          alt="${esc(p.name)}"
+          loading="lazy"
+          onerror="this.closest('.img-wrap').style.background='rgba(18,18,24,.8)';this.style.display='none'"
+        >
+        <div class="pc-cap">
+          <div class="pc-name">${esc(p.name)}</div>
+          <div class="pc-tags">
+            ${(p.tags||[]).map(t=>`<span class="pc-tag">${esc(t)}</span>`).join('')}
+            ${p.year?`<span class="pc-tag">${esc(p.year)}</span>`:''}
+            ${p.budget?`<span class="pc-tag">${esc(p.budget)}</span>`:''}
+          </div>
+          <div class="pc-specs">
+            ${(p.specs||[]).map(s=>`
+              <span class="spec-pill">${specIcon(s.icon)}${esc(s.text)}</span>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Stagger 入場
+  requestAnimationFrame(()=>{
+    grid.querySelectorAll('.pc-card').forEach((el,i)=>{
+      setTimeout(()=>el.classList.add('visible'), i*80);
+    });
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────
+buildFilters();
+renderGrid('all');
+
+// ── Magnetic Cursor ───────────────────────────────────────────
+if(window.matchMedia('(pointer: fine)').matches){
+  const dot  = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mouseX=-100, mouseY=-100, dotX=-100, dotY=-100, ringX=-100, ringY=-100;
+  const dotSpeed=0.45, ringSpeed=0.15;
+  window.addEventListener('mousemove', e=>{ mouseX=e.clientX; mouseY=e.clientY; }, {passive:true});
+  (function animateCursor(){
+    dotX  += (mouseX-dotX)  * dotSpeed;
+    dotY  += (mouseY-dotY)  * dotSpeed;
+    ringX += (mouseX-ringX) * ringSpeed;
+    ringY += (mouseY-ringY) * ringSpeed;
+    dot.style.transform  = `translate3d(${dotX}px,${dotY}px,0) translate(-50%,-50%)`;
+    ring.style.transform = `translate3d(${ringX}px,${ringY}px,0) translate(-50%,-50%)`;
+    requestAnimationFrame(animateCursor);
+  })();
+  const hoverSel = 'a, button, .toggle, .filter-btn, .pc-card, .cta-btn, .alt-link';
+  document.addEventListener('mouseover', e=>{ if(e.target.closest(hoverSel)){ ring.classList.add('hovered'); dot.classList.add('hovered'); } });
+  document.addEventListener('mouseout',  e=>{ if(e.target.closest(hoverSel)){ ring.classList.remove('hovered'); dot.classList.remove('hovered'); } });
+}
+</script>
+</body>
+</html>

@@ -6,8 +6,16 @@
   <meta name="color-scheme" content="dark" />
   <title>Flow Studio</title>
   
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y9JX4Q6JN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1Y9JX4Q6JN');
+  </script>
+  
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="apple-touch-icon" href="images/favicon.png">
 
   <style>
     :root{
@@ -389,7 +397,7 @@
       display:block;
       opacity:.96;
       filter: saturate(.9) contrast(1.02);
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, transform 0.4s ease;
     }
     .productHero .cap{
       position:absolute;
@@ -486,7 +494,7 @@
       opacity: 0.9;
     }
 
-    /* [新增] Others 區塊樣式 */
+    /* Others */
     .otherCard {
       grid-column: span 4;
       border-radius: var(--radius2);
@@ -568,33 +576,94 @@
       border-top:1px solid rgba(232,232,234,.08);
     }
 
-    /* Music toggle */
-    .musicToggle{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      z-index:20;
-      display:flex;
-      gap:10px;
-      align-items:center;
+    /* Music Player */
+    .musicPlayer {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
     }
-    .musicBtn{
-      appearance:none;
-      border:1px solid rgba(232,232,234,.12);
-      background:rgba(18,18,24,.40);
-      color:rgba(232,232,234,.86);
-      padding:10px 12px;
-      border-radius:999px;
-      cursor:pointer;
-      font-size:12px;
-      letter-spacing:.10em;
-      text-transform:uppercase;
-      transition: background .2s ease, border-color .2s ease, transform .15s ease;
-      user-select:none;
+    .musicPanel {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(18,18,24,.72);
+      border: 1px solid rgba(232,232,234,.12);
+      border-radius: 999px;
+      padding: 8px 14px 8px 10px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      transform: translateY(6px) scale(.97);
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
     }
-    .musicBtn:hover{
-      background:rgba(18,18,24,.55);
-      border-color:rgba(232,232,234,.18);
+    .musicPanel.open {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+    .musicPlayBtn {
+      appearance: none;
+      width: 28px; height: 28px;
+      border-radius: 999px;
+      border: 1px solid rgba(232,232,234,.16);
+      background: rgba(232,232,234,.06);
+      color: rgba(232,232,234,.86);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
+      flex-shrink: 0;
+    }
+    .musicPlayBtn:hover { background: rgba(232,232,234,.12); border-color: rgba(232,232,234,.24); }
+    .vol-icon { color: rgba(232,232,234,.45); flex-shrink: 0; }
+    .vol-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px; height: 2px;
+      background: rgba(232,232,234,.16);
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 999px;
+      background: rgba(232,232,234,.80);
+      cursor: pointer;
+      transition: background .15s, transform .15s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover {
+      background: rgba(232,232,234,1);
+      transform: scale(1.2);
+    }
+    .vol-slider::-moz-range-thumb {
+      width: 12px; height: 12px;
+      border-radius: 999px;
+      background: rgba(232,232,234,.80);
+      border: none; cursor: pointer;
+    }
+    .musicToggleBtn {
+      appearance: none;
+      border: 1px solid rgba(232,232,234,.12);
+      background: rgba(18,18,24,.55);
+      color: rgba(232,232,234,.72);
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s, transform .15s;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .musicToggleBtn:hover {
+      background: rgba(18,18,24,.75);
+      border-color: rgba(232,232,234,.20);
       transform: translateY(-1px);
     }
     .musicHint{
@@ -604,29 +673,58 @@
       display:none;
     }
 
-    /* Responsive */
-    @media (max-width: 920px){
-      .heroGrid{grid-template-columns: 1fr; align-items:start}
-      .card{grid-column: span 6}
-      .step{grid-column: span 6}
-      .twoCol{grid-template-columns:1fr}
-      nav{display:none}
-      .pm{grid-column: span 12}
-      .productHero{grid-column: span 12;}
-      .processVisuals{grid-template-columns: 1fr;}
-      /* [修改] 手機版 Others 變成單欄堆疊 */
-      .otherCard { grid-column: span 12; }
-    }
-    @media (max-width: 560px){
-      .wrap{width:min(var(--max), calc(100% - 28px))}
-      .hero{padding:70px 0 44px}
-      .card{grid-column: span 12}
-      .step{grid-column: span 12}
-    }
+    /* --- [新增] 磁性游標樣式 --- */
+ /* --- [修正版] 磁性游標樣式 --- */
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--ink);
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 50%;
+  will-change: transform;
+  transition: width 0.3s, height 0.3s, opacity 0.3s;
+}
+
+.cursor-ring {
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(232,232,234, 0.3);
+  position: fixed;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 9998;
+  border-radius: 50%;
+  will-change: transform;
+  transition: width 0.3s, height 0.3s, background 0.3s, border-color 0.3s;
+}
+
+/* 懸浮放大狀態 */
+.cursor-ring.hovered {
+  width: 50px;
+  height: 50px;
+  background: rgba(232,232,234, 0.1);
+  border-color: rgba(232,232,234, 0.8);
+}
+
+.cursor-dot.hovered {
+  opacity: 0; /* 放大時隱藏中心點，或是縮小 */
+}
+
+/* 記得隱藏原生鼠標 */
+@media (pointer: fine) {
+  body { cursor: none; }
+  a, button, .toggle { cursor: none; }
+}
   </style>
 </head>
 
 <body>
+  <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+  <div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
+
   <canvas id="bg" aria-hidden="true"></canvas>
   <div class="vignette" aria-hidden="true"></div>
 
@@ -644,6 +742,7 @@
         <a href="#about">About</a>
         <a href="#contact">Contact</a>
         <a href="ceramics.html">Ceramics ↗</a>
+        <a href="pc-builds.html">PC Builds ↗</a>
       </nav>
 
       <div class="chip">
@@ -693,9 +792,9 @@
           
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p1_a.png" alt=""Port"ery 1" class="p-img">
+              <img src="images/p1_a.png" alt=""Port"ery 1" class="p-img">
               <div class="cap">
-                <h4>"Port"ery 1</h4>
+                <h4>FLOW 1 Series</h4>
                 <p>Because the universe is vast and indifferent.</p>
                 <button class="btn ghost btn-sm toggle-detail">View Detail</button>
               </div>
@@ -708,7 +807,7 @@
 
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p2_a.png" alt="Flow Minimum" class="p-img">
+              <img src="images/p2_a.png" alt="Flow Minimum" class="p-img">
               <div class="cap">
                 <h4>Flow Minimum</h4>
                 <p>Quiet hardware. Heavy clarity.</p>
@@ -723,7 +822,7 @@
 
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p3_a.png" alt="Flow X" class="p-img">
+              <img src="images/p3_a.png" alt="Flow X" class="p-img">
               <div class="cap">
                 <h4>Flow X</h4>
                 <p>A field, not a stage.</p>
@@ -738,7 +837,7 @@
 
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p4_a.png" alt="Flow Wave" class="p-img">
+              <img src="images/p4_a.png" alt="Flow Wave" class="p-img">
               <div class="cap">
                 <h4>Flow Wave</h4>
                 <p>Carry the field — protection shaped by motion.</p>
@@ -753,7 +852,7 @@
 
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p5_a.png" alt="Flow mute" class="p-img">
+              <img src="images/p5_a.png" alt="Flow mute" class="p-img">
               <div class="cap">
                 <h4>Flow mute</h4>
                 <p>Sound has mass — a speaker as gravity source.</p>
@@ -768,7 +867,7 @@
 
           <article class="productHero">
             <div class="imgWrap">
-              <img src="p6_a.png" alt="Flow Flux" class="p-img">
+              <img src="images/p6_a.png" alt="Flow Flux" class="p-img">
               <div class="cap">
                 <h4>Flow Flux</h4>
                 <p>Designed to move. Built to endure.</p>
@@ -812,8 +911,8 @@
         </div>
         
         <div class="processVisuals">
-            <img src="about_1.png" class="p-visual" alt="Process Intro 1">
-            <img src="about_2.png" class="p-visual" alt="Process Intro 2">
+            <img src="images/about_1.png" class="p-visual" alt="Process Intro 1">
+            <img src="images/about_2.png" class="p-visual" alt="Process Intro 2">
         </div>
 
         <div class="grid">
@@ -833,13 +932,13 @@
             </div>
             <div class="grid">
                 <div class="otherCard">
-                    <img src="other_1.png" alt="Other work 1">
+                    <img src="images/other_1.png" alt="Other work 1">
                 </div>
                 <div class="otherCard">
-                    <img src="other_2.png" alt="Other work 2">
+                    <img src="images/other_2.png" alt="Other work 2">
                 </div>
                 <div class="otherCard">
-                    <img src="other_3.png" alt="Other work 3">
+                    <img src="images/other_3.png" alt="Other work 3">
                 </div>
             </div>
         </div>
@@ -899,25 +998,41 @@
   </main>
 
   <audio id="bgm" src="music.mp3" loop autoplay></audio>
-  <div class="musicToggle" aria-label="Background music controls">
-    <button class="musicBtn" id="musicBtn" type="button">Music On</button>
+  <div class="musicPlayer" aria-label="Music controls">
+    <div class="musicPanel" id="musicPanel">
+      <button class="musicPlayBtn" id="musicPlayBtn" aria-label="Play / Pause">
+        <svg id="ico-pause" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>
+        <svg id="ico-play"  width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+      <svg class="vol-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path id="vol-wave1" d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path id="vol-wave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.01" value="0.65" aria-label="Volume">
+    </div>
+    <button class="musicToggleBtn" id="musicToggleBtn" aria-label="Music settings">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </button>
   </div>
 
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    // Detail Button Logic
+    // Detail Button Logic — with fade transition (mirrors ceramics filter animation)
     document.querySelectorAll('.toggle-detail').forEach(btn => {
       btn.addEventListener('click', function(e) {
         const card = e.target.closest('.productHero');
-        const img = card.querySelector('.p-img');
+        const img  = card.querySelector('.p-img');
         const currentSrc = img.getAttribute('src');
+        const nextSrc = currentSrc.includes('_a.png')
+          ? currentSrc.replace('_a.png', '_b.png')
+          : currentSrc.replace('_b.png', '_a.png');
+        const nextLabel = currentSrc.includes('_a.png') ? 'Back' : 'View Detail';
 
-        if(currentSrc.includes('_a.png')) {
-          img.src = currentSrc.replace('_a.png', '_b.png');
-          e.target.textContent = 'Back';
-        } else {
-          img.src = currentSrc.replace('_b.png', '_a.png');
-          e.target.textContent = 'View Detail';
-        }
+        // 淡出 → 換圖 → 淡入（與 ceramics lightbox 切換邏輯一致）
+        img.style.opacity = '0';
+        img.style.transform = 'scale(0.97)';
+        setTimeout(() => {
+          img.src = nextSrc;
+          img.style.opacity = '';
+          img.style.transform = '';
+          e.target.textContent = nextLabel;
+        }, 220);
       });
     });
 
@@ -960,28 +1075,83 @@
       if(motionEnabled) start(); else stop();
     });
 
-    // Music Control
-    const bgm = document.getElementById('bgm');
-    const musicBtn = document.getElementById('musicBtn');
+    // Music Player
+    const bgm          = document.getElementById('bgm');
+    const musicPanel   = document.getElementById('musicPanel');
+    const musicToggleBtn = document.getElementById('musicToggleBtn');
+    const musicPlayBtn = document.getElementById('musicPlayBtn');
+    const volSlider    = document.getElementById('volSlider');
+    const icoPause     = document.getElementById('ico-pause');
+    const icoPlay      = document.getElementById('ico-play');
+    const volWave1     = document.getElementById('vol-wave1');
+    const volWave2     = document.getElementById('vol-wave2');
 
-    async function tryPlay(){
-      try{ await bgm.play(); }catch(e){}
+    let panelOpen = false;
+    let hasInteracted = false;
+
+    async function tryPlay(){ try{ await bgm.play(); }catch(e){} }
+
+    function syncPlayIcons() {
+      const playing = !bgm.paused;
+      icoPause.style.display = playing ? '' : 'none';
+      icoPlay.style.display  = playing ? 'none' : '';
     }
 
-    window.addEventListener('load', ()=>{
-      bgm.volume = 0.65;
-      tryPlay();
-    }, {once:true});
+    function syncVolIcons(vol) {
+      volWave1.style.opacity = vol > 0 ? '1' : '0.15';
+      volWave2.style.opacity = vol > 0.3 ? '1' : '0.15';
+    }
 
-    musicBtn.addEventListener('click', ()=>{
-      if(bgm.paused){
-        tryPlay();
-        musicBtn.textContent = 'Music On';
-      }else{
-        bgm.pause();
-        musicBtn.textContent = 'Music Off';
+    // Init volume
+    bgm.volume = 0.65;
+    volSlider.value = 0.65;
+
+    // Try autoplay immediately, then on first interaction as fallback
+    tryPlay().then(syncPlayIcons);
+
+    function onFirstInteraction() {
+      if (hasInteracted) return;
+      hasInteracted = true;
+      if (bgm.paused) tryPlay().then(syncPlayIcons);
+      document.removeEventListener('click', onFirstInteraction);
+      document.removeEventListener('keydown', onFirstInteraction);
+      document.removeEventListener('touchstart', onFirstInteraction);
+    }
+    document.addEventListener('click', onFirstInteraction);
+    document.addEventListener('keydown', onFirstInteraction);
+    document.addEventListener('touchstart', onFirstInteraction);
+
+    // Toggle panel open/close
+    musicToggleBtn.addEventListener('click', () => {
+      panelOpen = !panelOpen;
+      musicPanel.classList.toggle('open', panelOpen);
+    });
+
+    // Close panel when clicking outside
+    document.addEventListener('click', (e) => {
+      if (panelOpen && !e.target.closest('.musicPlayer')) {
+        panelOpen = false;
+        musicPanel.classList.remove('open');
       }
     });
+
+    // Play / Pause
+    musicPlayBtn.addEventListener('click', () => {
+      if (bgm.paused) { tryPlay(); } else { bgm.pause(); }
+      setTimeout(syncPlayIcons, 80);
+    });
+
+    // Volume slider
+    volSlider.addEventListener('input', () => {
+      const vol = parseFloat(volSlider.value);
+      bgm.volume = vol;
+      syncVolIcons(vol);
+      if (vol > 0 && bgm.paused) { tryPlay(); setTimeout(syncPlayIcons, 80); }
+      if (vol === 0 && !bgm.paused) { bgm.pause(); setTimeout(syncPlayIcons, 80); }
+    });
+
+    bgm.addEventListener('play',  syncPlayIcons);
+    bgm.addEventListener('pause', syncPlayIcons);
 
     // Canvas Background (Gravitational Field)
     const canvas = document.getElementById('bg');
@@ -1079,172 +1249,52 @@
       raf = 0;
     }
 
+ // --- [優化版] 磁性游標 (Magnetic Cursor) 邏輯 ---
+  if (window.matchMedia("(pointer: fine)").matches) {
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+
+    let mouseX = -100, mouseY = -100; // 初始位置在螢幕外
+    let dotX = -100, dotY = -100;
+    let ringX = -100, ringY = -100;
     
-    // ── CMS Data Loader ──────────────────────────────────────────
-    // Priority: GitHub raw data.json → localStorage fallback
-    (async function loadCMSData() {
+    const dotSpeed = 0.45; 
+    const ringSpeed = 0.15; 
 
-      function esc(s) {
-        return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    }, { passive: true });
+
+    function animateCursor() {
+      dotX += (mouseX - dotX) * dotSpeed;
+      dotY += (mouseY - dotY) * dotSpeed;
+      ringX += (mouseX - ringX) * ringSpeed;
+      ringY += (mouseY - ringY) * ringSpeed;
+
+      dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
+      ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+      
+      requestAnimationFrame(animateCursor);
+    }
+    requestAnimationFrame(animateCursor);
+
+    document.addEventListener('mouseover', (e) => {
+      const target = e.target.closest('a, button, .toggle, .btn, .card, .productHero, .otherCard, .panel, .linkPill');
+      if (target) {
+        ring.classList.add('hovered');
+        dot.classList.add('hovered');
       }
+    });
 
-      function applyData(D) {
-        if (!D) return;
-
-        // Hero
-        const h = D.hero;
-        if (h) {
-          const kicker = document.querySelector('.kicker');
-          const h1el   = document.querySelector('h1');
-          const subEl  = document.querySelector('.sub');
-          if (kicker) kicker.textContent = h.kicker;
-          if (h1el)   h1el.textContent   = h.title;
-          if (subEl)  subEl.textContent  = h.sub;
-          const rows = document.querySelectorAll('.heroCard .row b');
-          if (rows.length >= 3 && h.card) {
-            rows[0].textContent = h.card.focus;
-            rows[1].textContent = h.card.approach;
-            rows[2].textContent = h.card.output;
-          }
-        }
-
-        // Works
-        if (D.works && D.works.length) {
-          const grid = document.querySelector('.productsGrid');
-          if (grid) {
-            grid.innerHTML = D.works.map((w,wi) => `
-              <article class="productHero" data-wi="${wi}">
-                <div class="imgWrap">
-                  <img src="${esc(w.imgA)}" alt="${esc(w.name)}" class="p-img">
-                  <div class="cap">
-                    <h4>${esc(w.name)}</h4>
-                    <p>${esc(w.desc)}</p>
-                    <button class="btn ghost btn-sm toggle-detail">View Detail</button>
-                  </div>
-                </div>
-                <div class="productMeta">
-                  ${(w.meta||[]).map(m=>`
-                    <div class="pm">
-                      <div class="k">${esc(m.k)}</div>
-                      <div class="v">${esc(m.v)}</div>
-                    </div>`).join('')}
-                </div>
-              </article>`).join('');
-
-            grid.querySelectorAll('.toggle-detail').forEach(btn => {
-              btn.addEventListener('click', function(e) {
-                const card = e.target.closest('.productHero');
-                const img  = card.querySelector('.p-img');
-                const wi   = +card.dataset.wi;
-                const w    = D.works[wi];
-                if (!w) return;
-                const showingB = img.getAttribute('data-b');
-                if (!showingB && w.imgB) {
-                  img.src = w.imgB; img.setAttribute('data-b','1'); e.target.textContent = 'Back';
-                } else {
-                  img.src = w.imgA; img.removeAttribute('data-b'); e.target.textContent = 'View Detail';
-                }
-              });
-            });
-          }
-        }
-
-        // Concept Cards
-        if (D.concepts && D.concepts.length) {
-          const cardGrid = document.querySelector('#works .grid[role="list"]');
-          if (cardGrid) {
-            cardGrid.innerHTML = D.concepts.map(c => `
-              <article class="card" role="listitem">
-                <div class="cardTop">
-                  ${(c.tags||[]).map(t=>`<div class="tag">${esc(t)}</div>`).join('')}
-                </div>
-                <h4>${esc(c.name)}</h4>
-                <p>${esc(c.desc)}</p>
-              </article>`).join('');
-          }
-        }
-
-        // Process
-        if (D.process) {
-          const procSub = document.querySelector('#process .sectionTitle p');
-          if (procSub) procSub.textContent = D.process.subtitle;
-          if (D.process.steps && D.process.steps.length) {
-            const stepGrid = document.querySelector('#process .grid');
-            if (stepGrid) {
-              stepGrid.innerHTML = D.process.steps.map(s => `
-                <div class="step">
-                  <div class="num">${esc(s.num)}</div>
-                  <h5>${esc(s.title)}</h5>
-                  <p>${esc(s.desc)}</p>
-                </div>`).join('');
-            }
-          }
-        }
-
-        // Others
-        if (D.others && D.others.length) {
-          const othGrid = document.querySelector('#others .grid');
-          if (othGrid) {
-            othGrid.innerHTML = D.others.map(o => `
-              <div class="otherCard">
-                <img src="${esc(o.src)}" alt="${esc(o.alt)}">
-              </div>`).join('');
-          }
-        }
-
-        // About
-        if (D.about) {
-          const panels = document.querySelectorAll('#about .panel p');
-          if (panels[0]) panels[0].textContent = D.about.positioning;
-          if (panels[1]) panels[1].textContent = D.about.capabilities;
-        }
-
-        // Contact
-        if (D.contact) {
-          const nameEl = document.querySelector('#contact .panel > p');
-          if (nameEl) nameEl.textContent = D.contact.name;
-          const pills = document.querySelectorAll('#contact .linkPill');
-          if (pills[0]) {
-            pills[0].href = D.contact.igUrl;
-            const igLabel = pills[0].querySelector('span:last-of-type');
-            if (igLabel) igLabel.textContent = D.contact.ig;
-          }
-          if (pills[1]) {
-            pills[1].href = 'tel:' + D.contact.tel.replace(/[^0-9+]/g,'');
-            const telNode = Array.from(pills[1].childNodes).find(n => n.nodeType===3 && n.textContent.trim());
-            if (telNode) telNode.textContent = ' ' + D.contact.tel;
-          }
-          if (pills[2]) {
-            pills[2].href = 'mailto:' + D.contact.email;
-            const emailSp = pills[2].querySelector('.cms-email') || pills[2].lastElementChild;
-            if (emailSp) emailSp.textContent = D.contact.email;
-          }
-        }
+    document.addEventListener('mouseout', (e) => {
+      const target = e.target.closest('a, button, .toggle, .btn, .card, .productHero, .otherCard, .panel, .linkPill');
+      if (target) {
+        ring.classList.remove('hovered');
+        dot.classList.remove('hovered');
       }
-
-      // ── 1. 直接用相對路徑抓同目錄的 data.json ───────────────
-      let loaded = false;
-      try {
-        const res = await fetch('./data.json?t=' + Date.now());
-        if (res.ok) {
-          const D = await res.json();
-          applyData(D);
-          loaded = true;
-        }
-      } catch(e) { /* silently fall through to localStorage */ }
-
-      // ── 2. Fall back to localStorage ─────────────────────────
-      if (!loaded) {
-        const raw = localStorage.getItem('fs_data');
-        if (raw) {
-          try { applyData(JSON.parse(raw)); } catch(e) {}
-        }
-      }
-
-    })();
-    // ── End CMS Data Loader ──────────────────────────────────────
-
-
+    });
+  } // 這裡結束 if 判斷
   </script>
 </body>
 </html>

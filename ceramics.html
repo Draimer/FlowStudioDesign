@@ -6,8 +6,16 @@
   <meta name="color-scheme" content="dark" />
   <title>Ceramics — Flow Studio</title>
 
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1Y9JX4Q6JN"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-1Y9JX4Q6JN');
+  </script>
+
+  <link rel="icon" type="image/png" href="images/favicon.png">
+  <link rel="apple-touch-icon" href="images/favicon.png">
 
   <style>
     :root{
@@ -51,7 +59,7 @@
     a{color:inherit; text-decoration:none}
     .wrap{width:min(var(--max), calc(100% - 48px)); margin:0 auto;}
 
-    /* Nav */
+    /* ─── Nav ────────────────────────────── */
     header{
       position:sticky; top:0; z-index:10;
       backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -96,28 +104,54 @@
     .dot{ width:8px; height:8px; border-radius:999px; background:rgba(232,232,234,.18); box-shadow:0 0 0 6px rgba(232,232,234,.05); }
     .dot.on{ background:rgba(232,232,234,.65) }
 
-    /* Page header */
+    /* ─── Page Hero ──────────────────────── */
     .page-hero{
       padding:80px 0 52px;
+      /* [NEW] 整體頁面入場 */
+      opacity:0; transform:translateY(16px);
+      animation: heroIn .6s cubic-bezier(.22,.68,0,1.2) forwards .05s;
+    }
+    @keyframes heroIn{
+      to{ opacity:1; transform:translateY(0); }
     }
     .kicker{
       color:var(--muted); font-size:12px; letter-spacing:.24em;
       text-transform:uppercase; margin:0 0 12px;
+      /* [NEW] clip-path 揭幕 */
+      clip-path: inset(0 100% 0 0);
+      animation: revealX .55s cubic-bezier(.22,.68,0,1.2) forwards .25s;
+    }
+    @keyframes revealX{
+      to{ clip-path: inset(0 0% 0 0); }
     }
     h1{
       margin:0 0 14px; font-weight:520; letter-spacing:-.02em;
       line-height:1.06; font-size: clamp(36px, 4.5vw, 62px);
+      /* [NEW] 從底部揭幕 */
+      clip-path: inset(0 0 100% 0);
+      animation: revealY .6s cubic-bezier(.22,.68,0,1.2) forwards .35s;
+    }
+    @keyframes revealY{
+      to{ clip-path: inset(0 0 0% 0); }
     }
     .sub{
       margin:0; max-width:62ch;
       color:rgba(232,232,234,.78); font-size:16px; line-height:1.7;
+      opacity:0;
+      animation: fadeUp .5s ease forwards .52s;
+    }
+    @keyframes fadeUp{
+      from{ opacity:0; transform:translateY(10px); }
+      to{   opacity:1; transform:translateY(0); }
     }
 
-    /* Filter bar */
+    /* ─── Filter bar ─────────────────────── */
     .filter-bar{
       display:flex; gap:8px; flex-wrap:wrap; align-items:center;
       padding:18px 0; border-bottom:1px solid rgba(232,232,234,.08);
       margin-bottom:32px;
+      opacity:0;
+      animation: fadeUp .5s ease forwards .62s;
     }
     .filter-label{
       font-size:10px; letter-spacing:.22em; text-transform:uppercase;
@@ -129,12 +163,19 @@
       background:rgba(232,232,234,.03);
       color:rgba(232,232,234,.60);
       font-size:11px; letter-spacing:.10em; text-transform:uppercase;
-      cursor:pointer; transition: all .15s; font-family:inherit;
+      cursor:pointer; font-family:inherit;
+      transition: border-color .2s ease, color .2s ease, background .2s ease, transform .15s ease;
     }
-    .filter-btn:hover{ border-color:rgba(232,232,234,.18); color:var(--ink); background:rgba(232,232,234,.06); }
-    .filter-btn.on{ border-color:rgba(232,232,234,.26); color:var(--ink); background:rgba(232,232,234,.08); }
+    .filter-btn:hover{
+      border-color:rgba(232,232,234,.18); color:var(--ink);
+      background:rgba(232,232,234,.06); transform:translateY(-1px);
+    }
+    .filter-btn.on{
+      border-color:rgba(232,232,234,.26); color:var(--ink);
+      background:rgba(232,232,234,.08);
+    }
 
-    /* Masonry-style grid */
+    /* ─── Masonry Grid ───────────────────── */
     .ceramics-grid{
       columns: 3;
       column-gap: 14px;
@@ -143,6 +184,7 @@
     @media(max-width:900px){ .ceramics-grid{ columns:2; } }
     @media(max-width:520px){ .ceramics-grid{ columns:1; } }
 
+    /* [NEW] 每個卡片的入場動畫狀態 */
     .ceramic-item{
       break-inside: avoid;
       margin-bottom: 14px;
@@ -151,92 +193,211 @@
       background: linear-gradient(180deg, rgba(18,18,24,.52), rgba(18,18,24,.18));
       overflow:hidden;
       cursor:pointer;
-      transition: transform .22s ease, border-color .22s ease;
       position: relative;
+      /* [NEW] 初始隱藏，等 JS stagger 觸發 */
+      opacity:0;
+      transform: translateY(22px) scale(.98);
+      transition:
+        opacity .45s cubic-bezier(.22,.68,0,1.2),
+        transform .45s cubic-bezier(.22,.68,0,1.2),
+        border-color .22s ease;
     }
+    /* [NEW] JS 加上 .visible 觸發入場 */
+    .ceramic-item.visible{
+      opacity:1;
+      transform: translateY(0) scale(1);
+    }
+    /* [NEW] filter 切換時的退場動畫 */
+    .ceramic-item.exiting{
+      opacity:0;
+      transform: translateY(-8px) scale(.97);
+      transition: opacity .22s ease, transform .22s ease;
+      pointer-events:none;
+    }
+
     .ceramic-item:hover{
-      transform: translateY(-3px);
-      border-color: rgba(232,232,234,.20);
+      border-color: rgba(232,232,234,.22);
     }
+
     .ceramic-item img{
       width:100%; display:block;
       object-fit:cover;
       filter: saturate(.9) contrast(1.02);
-      transition: transform .4s ease;
+      transition: transform .55s cubic-bezier(.22,.68,0,1.2), filter .4s ease;
     }
-    .ceramic-item:hover img{ transform: scale(1.03); }
+    .ceramic-item:hover img{
+      transform: scale(1.06);
+      filter: saturate(1.0) contrast(1.04);
+    }
+
+    /* [NEW] Caption slide-up overlay */
     .ceramic-cap{
-      padding:13px 14px 12px;
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 48px 16px 16px;
+      /* 從圖片底部往上的漸層遮罩 */
+      background: linear-gradient(
+        to top,
+        rgba(5,5,7,.92) 0%,
+        rgba(5,5,7,.70) 40%,
+        rgba(5,5,7,0) 100%
+      );
+      /* [NEW] 預設收在底部只露出 name */
+      transform: translateY(calc(100% - 38px));
+      transition: transform .4s cubic-bezier(.22,.68,0,1.2);
     }
+    .ceramic-item:hover .ceramic-cap{
+      transform: translateY(0);
+    }
+    /* 讓 name 始終可見（即使收起時） */
     .ceramic-name{
-      font-size:13px; font-weight:550; letter-spacing:.04em; margin-bottom:4px;
+      font-size:13px; font-weight:550; letter-spacing:.04em; margin-bottom:6px;
+      /* 在 hover 時 name 有輕微下移 */
+      transition: transform .4s cubic-bezier(.22,.68,0,1.2);
+    }
+    .ceramic-item:hover .ceramic-name{
+      transform: translateY(0);
     }
     .ceramic-meta{
       display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px;
+      opacity:0; transform:translateY(6px);
+      transition: opacity .3s ease .08s, transform .3s ease .08s;
+    }
+    .ceramic-item:hover .ceramic-meta{
+      opacity:1; transform:translateY(0);
     }
     .ceramic-tag{
       font-size:10px; letter-spacing:.14em; text-transform:uppercase;
-      color:rgba(232,232,234,.55); border:1px solid rgba(232,232,234,.10);
-      border-radius:999px; padding:3px 8px; background:rgba(232,232,234,.03);
+      color:rgba(232,232,234,.62); border:1px solid rgba(232,232,234,.14);
+      border-radius:999px; padding:3px 8px; background:rgba(232,232,234,.05);
     }
     .ceramic-desc{
-      font-size:12px; color:rgba(232,232,234,.60); line-height:1.6; margin:0;
+      font-size:12px; color:rgba(232,232,234,.68); line-height:1.6; margin:0;
+      opacity:0; transform:translateY(6px);
+      transition: opacity .3s ease .14s, transform .3s ease .14s;
+    }
+    .ceramic-item:hover .ceramic-desc{
+      opacity:1; transform:translateY(0);
     }
 
-    /* Empty */
+    /* [NEW] 點擊波紋效果 */
+    .ceramic-item:active::after{
+      content:'';
+      position:absolute; inset:0;
+      background: rgba(232,232,234,.06);
+      border-radius: var(--radius);
+      animation: rippleFade .3s ease forwards;
+    }
+    @keyframes rippleFade{
+      from{ opacity:1; }
+      to{ opacity:0; }
+    }
+
+    /* ─── Empty ──────────────────────────── */
     .empty-state{
       text-align:center; padding:80px 0;
       color:rgba(232,232,234,.22); font-size:13px; letter-spacing:.1em;
     }
     .empty-state span{ display:block; font-size:36px; margin-bottom:12px; opacity:.4; }
 
-    /* Lightbox */
+    /* ─── Lightbox ───────────────────────── */
     .lb-overlay{
       position:fixed; inset:0;
-      background:rgba(5,5,7,.92);
-      backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      background:rgba(5,5,7,.94);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
       z-index:100;
       display:flex; align-items:center; justify-content:center;
       opacity:0; pointer-events:none;
-      transition: opacity .22s;
+      transition: opacity .28s cubic-bezier(.22,.68,0,1.2);
     }
     .lb-overlay.open{ opacity:1; pointer-events:all; }
+
+    /* [NEW] 圖片進場動畫 */
     .lb-inner{
       position:relative;
       max-width: min(820px, calc(100vw - 40px));
       max-height: calc(100vh - 80px);
       display:flex; flex-direction:column; align-items:center; gap:14px;
+      transform: scale(.94) translateY(12px);
+      transition: transform .32s cubic-bezier(.22,.68,0,1.2);
+      /* touch swipe 用 */
+      user-select:none;
     }
+    .lb-overlay.open .lb-inner{
+      transform: scale(1) translateY(0);
+    }
+    /* [NEW] swipe 時平移 */
+    .lb-inner.swiping{
+      transition: none;
+    }
+
     .lb-img{
       max-width:100%; max-height:calc(100vh - 180px);
-      object-fit:contain; border-radius:16px;
+      object-fit:contain; border-radius:18px;
       border:1px solid rgba(232,232,234,.10);
+      box-shadow: 0 24px 80px rgba(0,0,0,.6);
+      /* [NEW] 圖片切換淡入 */
+      transition: opacity .2s ease, transform .28s cubic-bezier(.22,.68,0,1.2);
     }
-    .lb-info{ text-align:center; }
+    .lb-img.switching{
+      opacity:0; transform:scale(.97);
+    }
+
+    .lb-info{
+      text-align:center;
+      opacity:0; transform:translateY(6px);
+      transition: opacity .25s ease .1s, transform .25s ease .1s;
+    }
+    .lb-overlay.open .lb-info{
+      opacity:1; transform:translateY(0);
+    }
     .lb-name{ font-size:14px; font-weight:550; letter-spacing:.08em; margin-bottom:4px; }
     .lb-desc{ font-size:12px; color:var(--muted); }
+
+    /* [NEW] 頁碼 */
+    .lb-counter{
+      font-size:11px; letter-spacing:.18em; color:rgba(232,232,234,.35);
+      margin-top:4px;
+    }
+
     .lb-close{
       position:fixed; top:20px; right:20px;
       width:38px; height:38px; border-radius:999px;
       border:1px solid rgba(232,232,234,.14); background:rgba(18,18,24,.6);
       color:var(--muted); font-size:18px; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      transition: all .15s;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      transition: background .15s, color .15s, transform .15s;
     }
-    .lb-close:hover{ background:rgba(232,232,234,.10); color:var(--ink); }
+    .lb-close:hover{ background:rgba(232,232,234,.10); color:var(--ink); transform:scale(1.08); }
+
     .lb-nav{
       position:fixed; top:50%; transform:translateY(-50%);
-      width:38px; height:38px; border-radius:999px;
+      width:42px; height:42px; border-radius:999px;
       border:1px solid rgba(232,232,234,.14); background:rgba(18,18,24,.6);
-      color:var(--muted); font-size:18px; cursor:pointer;
+      color:var(--muted); font-size:20px; cursor:pointer;
       display:flex; align-items:center; justify-content:center;
-      transition: all .15s;
+      backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+      transition: background .15s, color .15s, transform .15s;
     }
     .lb-nav:hover{ background:rgba(232,232,234,.10); color:var(--ink); }
     .lb-prev{ left:16px; }
     .lb-next{ right:16px; }
+    .lb-prev:hover{ transform:translateY(-50%) translateX(-2px); }
+    .lb-next:hover{ transform:translateY(-50%) translateX(2px); }
 
-    /* Section title */
+    /* [NEW] swipe 提示線（手機） */
+    .lb-swipe-hint{
+      font-size:11px; color:rgba(232,232,234,.28);
+      letter-spacing:.12em; text-transform:uppercase;
+      display:none;
+    }
+    @media(max-width:600px){
+      .lb-swipe-hint{ display:block; }
+      .lb-nav{ display:none; }
+    }
+
+    /* ─── Section ────────────────────────── */
     section{ padding:0 0 56px; }
     .sectionTitle{
       display:flex; justify-content:space-between; align-items:end;
@@ -247,33 +408,75 @@
       text-transform:uppercase; color:var(--muted); font-weight:650;
     }
 
-    /* Footer */
+    /* ─── Footer ─────────────────────────── */
     footer{
       padding:40px 0 54px;
-      color:rgba(232,232,234,.55);
-      font-size:12px;
+      color:rgba(232,232,234,.55); font-size:12px;
       border-top:1px solid rgba(232,232,234,.08);
     }
 
-    /* Music */
-    .musicToggle{
+    /* ─── Music Player ───────────────────── */
+    .musicPlayer{
       position:fixed; right:18px; bottom:18px; z-index:20;
+      display:flex; flex-direction:column; align-items:flex-end; gap:8px;
     }
-    .musicBtn{
-      appearance:none;
-      border:1px solid rgba(232,232,234,.12); background:rgba(18,18,24,.40);
-      color:rgba(232,232,234,.86); padding:10px 12px; border-radius:999px;
-      cursor:pointer; font-size:12px; letter-spacing:.10em; text-transform:uppercase;
-      transition: background .2s, border-color .2s, transform .15s;
+    .musicPanel{
+      display:flex; align-items:center; gap:10px;
+      background:rgba(18,18,24,.72); border:1px solid rgba(232,232,234,.12);
+      border-radius:999px; padding:8px 14px 8px 10px;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      opacity:0; transform:translateY(6px) scale(.97); pointer-events:none;
+      transition: opacity .2s ease, transform .2s ease;
     }
-    .musicBtn:hover{ background:rgba(18,18,24,.55); border-color:rgba(232,232,234,.18); transform:translateY(-1px); }
+    .musicPanel.open{ opacity:1; transform:translateY(0) scale(1); pointer-events:all; }
+    .musicPlayBtn{
+      appearance:none; width:28px; height:28px; border-radius:999px;
+      border:1px solid rgba(232,232,234,.16); background:rgba(232,232,234,.06);
+      color:rgba(232,232,234,.86); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .15s, border-color .15s; flex-shrink:0;
+    }
+    .musicPlayBtn:hover{ background:rgba(232,232,234,.12); border-color:rgba(232,232,234,.24); }
+    .vol-icon{ color:rgba(232,232,234,.45); flex-shrink:0; }
+    .vol-slider{
+      -webkit-appearance:none; appearance:none;
+      width:80px; height:2px; background:rgba(232,232,234,.16);
+      border-radius:999px; outline:none; cursor:pointer;
+    }
+    .vol-slider::-webkit-slider-thumb{
+      -webkit-appearance:none; width:12px; height:12px;
+      border-radius:999px; background:rgba(232,232,234,.80); cursor:pointer;
+      transition:background .15s, transform .15s;
+    }
+    .vol-slider::-webkit-slider-thumb:hover{ background:rgba(232,232,234,1); transform:scale(1.2); }
+    .vol-slider::-moz-range-thumb{
+      width:12px; height:12px; border-radius:999px;
+      background:rgba(232,232,234,.80); border:none; cursor:pointer;
+    }
+    .musicToggleBtn{
+      appearance:none; border:1px solid rgba(232,232,234,.12);
+      background:rgba(18,18,24,.55); color:rgba(232,232,234,.72);
+      width:36px; height:36px; border-radius:999px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background .2s, border-color .2s, transform .15s;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+    }
+    .musicToggleBtn:hover{ background:rgba(18,18,24,.75); border-color:rgba(232,232,234,.20); transform:translateY(-1px); }
 
-    @media(max-width:920px){
-      nav{ display:none; }
-    }
+    /* ─── Responsive ─────────────────────── */
+    @media(max-width:920px){ nav{ display:none; } }
     @media(max-width:560px){
       .wrap{ width:min(var(--max), calc(100% - 28px)); }
       .page-hero{ padding:60px 0 40px; }
+    }
+
+    /* ─── Reduced motion override ────────── */
+    @media(prefers-reduced-motion: reduce){
+      .ceramic-item, .ceramic-cap, .ceramic-name, .ceramic-meta,
+      .ceramic-desc, .lb-inner, .lb-img, .kicker, h1, .sub, .filter-bar,
+      .page-hero{ animation:none !important; transition:none !important; }
+      .ceramic-item{ opacity:1; transform:none; }
+      .ceramic-cap{ transform:none; }
     }
   </style>
 </head>
@@ -320,7 +523,6 @@
         <span class="filter-label">Filter</span>
         <button class="filter-btn on" data-filter="all">All</button>
       </div>
-
       <div class="ceramics-grid" id="ceramics-grid">
         <div class="empty-state"><span>◎</span>載入中…</div>
       </div>
@@ -329,15 +531,17 @@
 </main>
 
 <!-- Lightbox -->
-<div class="lb-overlay" id="lb" onclick="lbClickOutside(event)">
+<div class="lb-overlay" id="lb" onclick="lbClickOutside(event)" role="dialog" aria-modal="true" aria-label="作品預覽">
   <button class="lb-close" onclick="closeLb()" aria-label="關閉">×</button>
   <button class="lb-nav lb-prev" onclick="lbStep(-1)" aria-label="上一張">‹</button>
   <button class="lb-nav lb-next" onclick="lbStep(1)" aria-label="下一張">›</button>
-  <div class="lb-inner">
+  <div class="lb-inner" id="lb-inner">
     <img class="lb-img" id="lb-img" src="" alt="">
     <div class="lb-info">
       <div class="lb-name" id="lb-name"></div>
       <div class="lb-desc" id="lb-desc"></div>
+      <div class="lb-counter" id="lb-counter"></div>
+      <div class="lb-swipe-hint">← 左右滑動切換 →</div>
     </div>
   </div>
 </div>
@@ -354,15 +558,33 @@
 </footer>
 
 <audio id="bgm" src="music.mp3" loop autoplay></audio>
-<div class="musicToggle">
-  <button class="musicBtn" id="musicBtn" type="button">Music On</button>
+<div class="musicPlayer" aria-label="Music controls">
+  <div class="musicPanel" id="musicPanel">
+    <button class="musicPlayBtn" id="musicPlayBtn" aria-label="Play / Pause">
+      <svg id="ico-pause" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="4" height="18" rx="1"/><rect x="15" y="3" width="4" height="18" rx="1"/></svg>
+      <svg id="ico-play"  width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="5,3 19,12 5,21"/></svg>
+    </button>
+    <svg class="vol-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+      <path id="vol-wave1" d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      <path id="vol-wave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+    </svg>
+    <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.01" value="0.65" aria-label="Volume">
+  </div>
+  <button class="musicToggleBtn" id="musicToggleBtn" aria-label="Music settings">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+  </button>
 </div>
 
 <script>
-// ── Year ─────────────────────────────────────────────────────
+// ── Year ──────────────────────────────────────────────────────
 document.getElementById('year').textContent = new Date().getFullYear();
 
-// ── Motion ───────────────────────────────────────────────────
+// ── Motion ────────────────────────────────────────────────────
 const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 let motionEnabled = !prefersReduced;
 const motionToggle = document.getElementById('motionToggle');
@@ -373,40 +595,63 @@ function syncMotionUI(){
   motionDot.classList.toggle('on', motionEnabled);
 }
 syncMotionUI();
-
 window.addEventListener('load', () => { if(motionEnabled) start(); });
 motionToggle.addEventListener('click', ()=>{
   motionEnabled = !motionEnabled; syncMotionUI();
   if(motionEnabled) start(); else stop();
 });
 
-// ── Music ────────────────────────────────────────────────────
-const bgm = document.getElementById('bgm');
-const musicBtn = document.getElementById('musicBtn');
-async function tryPlay(){ try{ await bgm.play(); }catch(e){} }
-window.addEventListener('load', ()=>{ bgm.volume=0.65; tryPlay(); }, {once:true});
-musicBtn.addEventListener('click', ()=>{
-  if(bgm.paused){ tryPlay(); musicBtn.textContent='Music On'; }
-  else{ bgm.pause(); musicBtn.textContent='Music Off'; }
-});
+// ── Music Player ──────────────────────────────────────────────
+const bgm            = document.getElementById('bgm');
+const musicPanel     = document.getElementById('musicPanel');
+const musicToggleBtn = document.getElementById('musicToggleBtn');
+const musicPlayBtn   = document.getElementById('musicPlayBtn');
+const volSlider      = document.getElementById('volSlider');
+const icoPause       = document.getElementById('ico-pause');
+const icoPlay        = document.getElementById('ico-play');
+const volWave1       = document.getElementById('vol-wave1');
+const volWave2       = document.getElementById('vol-wave2');
+let panelOpen = false, hasInteracted = false;
 
-// ── Canvas ───────────────────────────────────────────────────
+async function tryPlay(){ try{ await bgm.play(); }catch(e){} }
+function syncPlayIcons(){ const p=!bgm.paused; icoPause.style.display=p?'':'none'; icoPlay.style.display=p?'none':''; }
+function syncVolIcons(v){ volWave1.style.opacity=v>0?'1':'0.15'; volWave2.style.opacity=v>0.3?'1':'0.15'; }
+bgm.volume = 0.65; volSlider.value = 0.65;
+tryPlay().then(syncPlayIcons);
+function onFirstInteraction(){
+  if(hasInteracted) return; hasInteracted=true;
+  if(bgm.paused) tryPlay().then(syncPlayIcons);
+  document.removeEventListener('click', onFirstInteraction);
+  document.removeEventListener('keydown', onFirstInteraction);
+  document.removeEventListener('touchstart', onFirstInteraction);
+}
+document.addEventListener('click', onFirstInteraction);
+document.addEventListener('keydown', onFirstInteraction);
+document.addEventListener('touchstart', onFirstInteraction);
+musicToggleBtn.addEventListener('click', ()=>{ panelOpen=!panelOpen; musicPanel.classList.toggle('open',panelOpen); });
+document.addEventListener('click', (e)=>{ if(panelOpen&&!e.target.closest('.musicPlayer')){ panelOpen=false; musicPanel.classList.remove('open'); } });
+musicPlayBtn.addEventListener('click', ()=>{ if(bgm.paused){tryPlay();}else{bgm.pause();} setTimeout(syncPlayIcons,80); });
+volSlider.addEventListener('input', ()=>{
+  const vol=parseFloat(volSlider.value); bgm.volume=vol; syncVolIcons(vol);
+  if(vol>0&&bgm.paused){tryPlay();setTimeout(syncPlayIcons,80);}
+  if(vol===0&&!bgm.paused){bgm.pause();setTimeout(syncPlayIcons,80);}
+});
+bgm.addEventListener('play', syncPlayIcons);
+bgm.addEventListener('pause', syncPlayIcons);
+
+// ── Canvas (Gravitational Field) ──────────────────────────────
 const canvas = document.getElementById('bg');
 const ctx    = canvas.getContext('2d', {alpha:true});
 let w=0, h=0, dpr=1;
 function resize(){
   dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
-  w = Math.floor(window.innerWidth);
-  h = Math.floor(window.innerHeight);
-  canvas.width  = Math.floor(w*dpr);
-  canvas.height = Math.floor(h*dpr);
-  canvas.style.width  = w+'px';
-  canvas.style.height = h+'px';
+  w = Math.floor(window.innerWidth); h = Math.floor(window.innerHeight);
+  canvas.width = Math.floor(w*dpr); canvas.height = Math.floor(h*dpr);
+  canvas.style.width = w+'px'; canvas.style.height = h+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener('resize', resize, {passive:true});
 resize();
-
 const center = { x:()=>w*0.52, y:()=>h*0.30 };
 const particles = [];
 const COUNT = 140;
@@ -423,17 +668,13 @@ init();
 let t=0, raf=0;
 function draw(){
   t+=1;
-  ctx.fillStyle=`rgba(5,5,7,0.10)`;
-  ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='rgba(5,5,7,0.10)'; ctx.fillRect(0,0,w,h);
   const cx=center.x(), cy=center.y(), time=t*0.008;
   const horizonR=Math.min(w,h)*0.12;
   const g=ctx.createRadialGradient(cx,cy,horizonR*0.15,cx,cy,horizonR*1.35);
-  g.addColorStop(0,'rgba(255,255,255,0.06)');
-  g.addColorStop(1,'rgba(255,255,255,0)');
-  ctx.fillStyle=g;
-  ctx.beginPath(); ctx.arc(cx,cy,horizonR*1.35,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='rgba(0,0,0,0.90)';
-  ctx.beginPath(); ctx.arc(cx,cy,horizonR*0.70,0,Math.PI*2); ctx.fill();
+  g.addColorStop(0,'rgba(255,255,255,0.06)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,horizonR*1.35,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.90)'; ctx.beginPath(); ctx.arc(cx,cy,horizonR*0.70,0,Math.PI*2); ctx.fill();
   for(const p of particles){
     const pull=1/Math.max(0.35,(p.r/(Math.min(w,h)*0.55)));
     const wave=Math.sin(time*0.8+p.phase)*(p.wobble*6);
@@ -442,8 +683,7 @@ function draw(){
     const r=p.r+wave;
     const x=cx+Math.cos(p.ang)*r, y=cy+Math.sin(p.ang)*r*0.72;
     const x2=cx+Math.cos(p.ang-0.02)*(r+8), y2=cy+Math.sin(p.ang-0.02)*(r+8)*0.72;
-    ctx.strokeStyle=`rgba(232,232,234,${p.alpha})`;
-    ctx.lineWidth=p.width;
+    ctx.strokeStyle=`rgba(232,232,234,${p.alpha})`; ctx.lineWidth=p.width;
     ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x,y); ctx.stroke();
   }
   raf=requestAnimationFrame(draw);
@@ -452,40 +692,20 @@ function start(){ stop(); ctx.fillStyle='rgba(5,5,7,1)'; ctx.fillRect(0,0,w,h); 
 function stop(){ if(raf) cancelAnimationFrame(raf); raf=0; }
 
 // ── Ceramics Data ─────────────────────────────────────────────
-let CERAMICS = [];
+let CERAMICS = [
+  { name: "Porttery 1",            img: "images/pt1_a.png", tags: ["陶藝"], year: "2024", desc: "As a port to flow" },
+  { name: "Refined business style",img: "images/pt1_b.png", tags: ["陶藝"], year: "2024", desc: "Bussiness style mug" },
+  { name: "Porttery 3",            img: "images/pt2_a.png", tags: ["器皿"], year: "2024", desc: "Study room mug" },
+  { name: "Wabi-sabi style",       img: "images/pt2_b.png", tags: ["器皿"], year: "2024", desc: "Define silent form" },
+  { name: "Porttery 5",            img: "images/pt3_a.png", tags: ["雕塑"], year: "2024", desc: "Teacup" },
+  { name: "Minimalist style",      img: "images/pt3_b.png", tags: ["雕塑"], year: "2024", desc: "Exquisite gift set" }
+];
 let filteredItems = [];
 let activeFilter  = 'all';
 
-// Load data.json - 直接用相對路徑，不依賴 localStorage 設定
-async function loadData() {
-  let data = null;
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-  try {
-    const res = await fetch('./data.json?t=' + Date.now());
-    if (res.ok) data = await res.json();
-  } catch(e) {}
-
-  // Fall back to localStorage
-  if (!data) {
-    const raw = localStorage.getItem('fs_data');
-    if (raw) try { data = JSON.parse(raw); } catch(e) {}
-  }
-
-  if (data?.ceramics && Array.isArray(data.ceramics)) {
-    CERAMICS = data.ceramics;
-  }
-
-  // Also apply page-level overrides if set
-  if (data?.ceramicsPage) {
-    const cp = data.ceramicsPage;
-    if (cp.title) document.getElementById('page-title').textContent = cp.title;
-    if (cp.sub)   document.getElementById('page-sub').textContent   = cp.sub;
-  }
-
-  buildFilters();
-  renderGrid('all');
-}
-
+// ── Filter Build ──────────────────────────────────────────────
 function buildFilters() {
   const tags = new Set();
   CERAMICS.forEach(c => (c.tags||[]).forEach(t => tags.add(t)));
@@ -495,30 +715,41 @@ function buildFilters() {
     ${[...tags].map(t=>`<button class="filter-btn" data-filter="${esc(t)}">${esc(t)}</button>`).join('')}`;
   bar.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      if(btn.dataset.filter === activeFilter) return;
       bar.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
       activeFilter = btn.dataset.filter;
-      filteredItems = activeFilter === 'all'
-        ? [...CERAMICS]
-        : CERAMICS.filter(c => (c.tags||[]).includes(activeFilter));
-      renderGrid(activeFilter);
+      filterWithTransition(activeFilter);
     });
   });
-  filteredItems = [...CERAMICS];
 }
 
+// ── [NEW] Filter 過場：先退場，再渲染並入場 ──────────────────
+function filterWithTransition(filter) {
+  const grid = document.getElementById('ceramics-grid');
+  const items = grid.querySelectorAll('.ceramic-item');
+
+  // 退場
+  items.forEach(el => el.classList.add('exiting'));
+
+  setTimeout(() => {
+    renderGrid(filter);
+  }, 500);
+}
+
+// ── Render Grid ───────────────────────────────────────────────
 function renderGrid(filter) {
   const grid = document.getElementById('ceramics-grid');
   const list = filter === 'all' ? CERAMICS : CERAMICS.filter(c=>(c.tags||[]).includes(filter));
   filteredItems = list;
 
-  if (!list.length) {
-    grid.innerHTML = `<div class="empty-state"><span>◎</span>${CERAMICS.length ? '沒有符合的作品' : '尚無陶瓷作品，請在後台新增'}</div>`;
+  if(!list.length){
+    grid.innerHTML = `<div class="empty-state"><span>◎</span>${CERAMICS.length ? '沒有符合的作品' : '尚無陶瓷作品'}</div>`;
     return;
   }
 
   grid.innerHTML = list.map((c,i) => `
-    <div class="ceramic-item" onclick="openLb(${i})" role="button" tabindex="0">
+    <div class="ceramic-item" data-idx="${i}" role="button" tabindex="0" aria-label="開啟 ${esc(c.name)}">
       ${c.img ? `<img src="${esc(c.img)}" alt="${esc(c.name)}" loading="lazy">` : ''}
       <div class="ceramic-cap">
         <div class="ceramic-name">${esc(c.name)}</div>
@@ -529,43 +760,133 @@ function renderGrid(filter) {
         ${c.desc ? `<p class="ceramic-desc">${esc(c.desc)}</p>` : ''}
       </div>
     </div>`).join('');
+
+  // click + keyboard
+  grid.querySelectorAll('.ceramic-item').forEach(el => {
+    el.addEventListener('click', () => openLb(+el.dataset.idx));
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') openLb(+el.dataset.idx); });
+  });
+
+  // [NEW] Stagger 入場——依 column 計算 delay
+  requestAnimationFrame(() => {
+    const cols = getComputedStyle(grid).columnCount || 3;
+    grid.querySelectorAll('.ceramic-item').forEach((el, i) => {
+      const colIdx = i % parseInt(cols);
+      const rowIdx = Math.floor(i / parseInt(cols));
+      // column-first stagger: 每欄 +50ms，每行 +30ms
+      const delay = colIdx * 55 + rowIdx * 28;
+      setTimeout(() => el.classList.add('visible'), delay);
+    });
+  });
 }
 
-function esc(s){
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function loadData() {
+  buildFilters();
+  renderGrid('all');
 }
 
-// ── Lightbox ──────────────────────────────────────────────────
+// ── [NEW] Lightbox with Touch Swipe ──────────────────────────
 let lbIdx = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let isSwiping   = false;
 
 function openLb(i) {
   lbIdx = i;
-  showLb();
-  document.getElementById('lb').classList.add('open');
+  const lb = document.getElementById('lb');
+  showLbImg(true);
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', lbKeyHandler);
+  initSwipe();
 }
-function showLb() {
+
+function showLbImg(instant) {
   const c = filteredItems[lbIdx];
-  if (!c) return;
-  document.getElementById('lb-img').src  = c.img  || '';
-  document.getElementById('lb-name').textContent = c.name || '';
-  document.getElementById('lb-desc').textContent = [
-    c.desc, c.year, (c.tags||[]).join(' · ')
-  ].filter(Boolean).join(' — ');
+  if(!c) return;
+  const img  = document.getElementById('lb-img');
+  const name = document.getElementById('lb-name');
+  const desc = document.getElementById('lb-desc');
+  const ctr  = document.getElementById('lb-counter');
+
+  if(!instant){
+    // 切換動畫：先淡出，換圖，再淡入
+    img.classList.add('switching');
+    setTimeout(() => {
+      img.src  = c.img || '';
+      img.alt  = c.name || '';
+      img.classList.remove('switching');
+    }, 200);
+  } else {
+    img.src = c.img || '';
+    img.alt = c.name || '';
+  }
+
+  name.textContent = c.name || '';
+  desc.textContent = [c.desc, c.year, (c.tags||[]).join(' · ')].filter(Boolean).join(' — ');
+  ctr.textContent  = `${lbIdx + 1} / ${filteredItems.length}`;
 }
+
 function closeLb() {
-  document.getElementById('lb').classList.remove('open');
+  const lb = document.getElementById('lb');
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
   document.removeEventListener('keydown', lbKeyHandler);
 }
+
 function lbStep(dir) {
   lbIdx = (lbIdx + dir + filteredItems.length) % filteredItems.length;
-  showLb();
+  showLbImg(false);
 }
-function lbClickOutside(e) { if(e.target.id==='lb') closeLb(); }
+
+function lbClickOutside(e) {
+  if(e.target.id === 'lb') closeLb();
+}
+
 function lbKeyHandler(e) {
   if(e.key==='ArrowLeft')  lbStep(-1);
   if(e.key==='ArrowRight') lbStep(1);
   if(e.key==='Escape')     closeLb();
+}
+
+// [NEW] Touch swipe
+function initSwipe() {
+  const inner = document.getElementById('lb-inner');
+  inner.addEventListener('touchstart', onTouchStart, { passive:true });
+  inner.addEventListener('touchmove',  onTouchMove,  { passive:true });
+  inner.addEventListener('touchend',   onTouchEnd,   { passive:true });
+}
+
+function onTouchStart(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  isSwiping   = false;
+}
+
+function onTouchMove(e) {
+  const dx = e.touches[0].clientX - touchStartX;
+  const dy = e.touches[0].clientY - touchStartY;
+  if(!isSwiping && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8){
+    isSwiping = true;
+  }
+  if(isSwiping){
+    const inner = document.getElementById('lb-inner');
+    inner.classList.add('swiping');
+    inner.style.transform = `translateX(${dx * 0.4}px)`;
+  }
+}
+
+function onTouchEnd(e) {
+  const inner = document.getElementById('lb-inner');
+  inner.classList.remove('swiping');
+  inner.style.transform = '';
+
+  if(!isSwiping) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 52){
+    lbStep(dx < 0 ? 1 : -1);
+  }
+  isSwiping = false;
 }
 
 // ── Init ──────────────────────────────────────────────────────
