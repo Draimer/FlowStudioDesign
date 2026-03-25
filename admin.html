@@ -1,0 +1,1576 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flow Studio — Admin</title>
+  <style>
+    :root {
+      --bg0: #050507;
+      --bg1: #0c0c10;
+      --bg2: #14141c;
+      --bg3: #1c1c26;
+      --ink: #E8E8EA;
+      --muted: rgba(232,232,234,.65);
+      --line: rgba(232,232,234,.10);
+      --line2: rgba(232,232,234,.16);
+      --accent: #a78bfa;
+      --accent-dim: rgba(167,139,250,.15);
+      --danger: #f87171;
+      --success: #4ade80;
+      --warn: #fb923c;
+      --radius: 12px;
+      --sidebar-w: 212px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg0);
+      color: var(--ink);
+      display: flex;
+      flex-direction: column;
+      font-size: 14px;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────── */
+    .topbar {
+      height: 50px;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+    }
+    .mark {
+      width: 18px; height: 18px; border-radius: 999px;
+      background: radial-gradient(circle at 55% 40%, rgba(255,255,255,.18) 0%, transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(0,0,0,.95) 0%, rgba(0,0,0,.95) 50%, rgba(255,255,255,.1) 54%, transparent 70%);
+      border: 1px solid rgba(232,232,234,.16);
+    }
+    .admin-badge {
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(167,139,250,.25);
+      color: var(--accent);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .status-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+    .dot-live { width: 6px; height: 6px; border-radius: 999px; background: var(--success); box-shadow: 0 0 6px rgba(74,222,128,.5); }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg1);
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      flex-shrink: 0;
+      padding-bottom: 20px;
+    }
+    .sb-group { padding: 20px 10px 6px; }
+    .sb-label {
+      font-size: 9.5px;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(232,232,234,.28);
+      padding: 0 8px;
+      margin-bottom: 5px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      letter-spacing: .02em;
+    }
+    .nav-item svg { opacity: .6; flex-shrink: 0; }
+    .nav-item:hover { background: rgba(232,232,234,.05); color: var(--ink); }
+    .nav-item.active { background: rgba(167,139,250,.12); color: var(--accent); }
+    .nav-item.active svg { opacity: 1; }
+    .nav-item.danger:hover { color: var(--danger); background: rgba(248,113,113,.07); }
+
+    /* ── Main ───────────────────────────────────────────────── */
+    .main { flex: 1; overflow-y: auto; }
+    .main-inner { padding: 28px 30px; max-width: 960px; }
+
+    /* ── Page header ─────────────────────────────────────────  */
+    .page-hd {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+    .page-title { font-size: 13px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+    .page-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* ── Buttons ─────────────────────────────────────────────  */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line2);
+      background: rgba(232,232,234,.04);
+      color: rgba(232,232,234,.85);
+      font-size: 11px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .14s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(232,232,234,.09); border-color: rgba(232,232,234,.22); transform: translateY(-1px); }
+    .btn-accent { background: var(--accent-dim); border-color: rgba(167,139,250,.3); color: var(--accent); }
+    .btn-accent:hover { background: rgba(167,139,250,.22); border-color: rgba(167,139,250,.45); }
+    .btn-success { background: rgba(74,222,128,.08); border-color: rgba(74,222,128,.25); color: var(--success); }
+    .btn-success:hover { background: rgba(74,222,128,.14); }
+    .btn-danger { background: rgba(248,113,113,.06); border-color: rgba(248,113,113,.2); color: var(--danger); }
+    .btn-danger:hover { background: rgba(248,113,113,.12); }
+    .btn-sm { padding: 5px 10px; font-size: 10px; }
+
+    /* ── Cards panel ──────────────────────────────────────────  */
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .panel-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .panel-title { font-size: 11px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+
+    /* ── Forms ───────────────────────────────────────────────  */
+    .fg { margin-bottom: 16px; }
+    .fg:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(232,232,234,.45);
+      margin-bottom: 7px;
+    }
+    input[type="text"],
+    input[type="url"],
+    input[type="email"],
+    input[type="tel"],
+    textarea,
+    select {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      font-size: 13px;
+      padding: 9px 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .14s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: rgba(167,139,250,.4); }
+    textarea { resize: vertical; min-height: 72px; line-height: 1.65; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-full { grid-column: 1 / -1; }
+
+    /* ── Image upload ─────────────────────────────────────────  */
+    .img-zone {
+      border: 1px dashed rgba(232,232,234,.18);
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      background: var(--bg3);
+      position: relative;
+      overflow: hidden;
+    }
+    .img-zone:hover, .img-zone.dragging { border-color: rgba(167,139,250,.5); background: rgba(167,139,250,.05); }
+    .img-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0;
+      cursor: pointer; width: 100%; height: 100%; font-size: 0;
+    }
+    .img-zone-preview { width: 100%; max-height: 140px; object-fit: contain; border-radius: 6px; margin-bottom: 8px; display: none; }
+    .img-hint { font-size: 11px; color: rgba(232,232,234,.3); line-height: 1.8; }
+    .img-hint strong { display: block; font-size: 20px; margin-bottom: 4px; opacity: .5; }
+
+    /* ── Works grid ───────────────────────────────────────────  */
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .work-card {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .work-card:hover { border-color: var(--line2); transform: translateY(-1px); }
+    .work-card-thumb {
+      width: 100%; aspect-ratio: 16/9;
+      object-fit: cover; display: block;
+      background: var(--bg3);
+    }
+    .work-card-no-thumb {
+      width: 100%; aspect-ratio: 16/9;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: rgba(232,232,234,.2); letter-spacing: .1em;
+    }
+    .work-card-body { padding: 12px; }
+    .work-card-name { font-size: 13px; font-weight: 550; margin-bottom: 3px; }
+    .work-card-desc { font-size: 11px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+    .work-card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .meta-pill {
+      font-size: 10px; padding: 2px 7px; border-radius: 999px;
+      border: 1px solid var(--line); color: rgba(232,232,234,.55); background: rgba(232,232,234,.03);
+      letter-spacing: .08em;
+    }
+    .work-card-actions { display: flex; gap: 6px; }
+
+    /* ── Concept list ─────────────────────────────────────────  */
+    .concept-list { display: flex; flex-direction: column; gap: 10px; }
+    .concept-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      transition: border-color .2s;
+    }
+    .concept-item:hover { border-color: var(--line2); }
+    .concept-body { flex: 1; }
+    .concept-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+    .ctag {
+      font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 7px;
+    }
+    .concept-name { font-size: 13px; font-weight: 550; margin-bottom: 3px; }
+    .concept-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .concept-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ── Process steps ────────────────────────────────────────  */
+    .steps-list { display: flex; flex-direction: column; gap: 8px; }
+    .step-row {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+    .step-num-badge {
+      width: 30px; height: 30px; border-radius: 999px;
+      border: 1px solid var(--line); background: rgba(232,232,234,.04);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; letter-spacing: .06em; color: var(--muted); flex-shrink: 0;
+    }
+    .step-inputs { flex: 1; display: flex; gap: 8px; }
+    .step-inputs input { flex: 1; }
+
+    /* ── Others grid ──────────────────────────────────────────  */
+    .others-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .other-item {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .other-thumb {
+      width: 100%; aspect-ratio: 16/10;
+      object-fit: cover; display: block;
+      background: var(--bg3);
+    }
+    .other-no-thumb {
+      width: 100%; aspect-ratio: 16/10;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: rgba(232,232,234,.2);
+    }
+    .other-body { padding: 10px; }
+    .other-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* ── Stats ───────────────────────────────────────────────  */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+    }
+    .stat-n { font-size: 30px; font-weight: 500; letter-spacing: -.03em; margin-bottom: 3px; }
+    .stat-lbl { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+
+    /* ── Tags editor ─────────────────────────────────────────  */
+    .tags-wrap {
+      display: flex; gap: 7px; flex-wrap: wrap; align-items: center;
+      min-height: 38px;
+      padding: 7px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: text;
+    }
+    .tag-chip {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(232,232,234,.07); border: 1px solid var(--line);
+      border-radius: 999px; padding: 3px 9px;
+      font-size: 10.5px; letter-spacing: .08em;
+    }
+    .tag-chip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; line-height: 1; padding: 0 1px; }
+    .tag-chip button:hover { color: var(--danger); }
+    .tag-add-row { display: flex; gap: 8px; margin-top: 8px; }
+    .tag-add-row input { flex: 1; }
+
+    /* ── Meta rows in modal ──────────────────────────────────  */
+    .meta-rows-editor { display: flex; flex-direction: column; gap: 7px; }
+    .meta-edit-row { display: flex; gap: 8px; align-items: center; }
+    .meta-edit-row input { flex: 1; }
+
+    /* ── Modal ───────────────────────────────────────────────  */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,5,7,.82);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--bg1);
+      border: 1px solid rgba(232,232,234,.13);
+      border-radius: 18px;
+      width: min(660px, calc(100vw - 32px));
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.65);
+    }
+    .modal-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+    .modal-title { font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+    .modal-close {
+      background: none; border: 1px solid var(--line); border-radius: 999px; color: var(--muted);
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 15px; transition: all .14s;
+    }
+    .modal-close:hover { background: rgba(232,232,234,.08); color: var(--ink); }
+    .modal-ft { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+    /* ── Divider ─────────────────────────────────────────────  */
+    hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
+
+    /* ── Pages ───────────────────────────────────────────────  */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Toast ───────────────────────────────────────────────  */
+    .toast {
+      position: fixed; bottom: 22px; right: 22px;
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 12.5px;
+      z-index: 9999;
+      opacity: 0; transform: translateY(8px);
+      transition: all .22s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok { border-color: rgba(74,222,128,.3); color: var(--success); }
+    .toast.err { border-color: rgba(248,113,113,.3); color: var(--danger); }
+
+    /* ── Empty ───────────────────────────────────────────────  */
+    .empty { text-align: center; padding: 44px 0; color: rgba(232,232,234,.3); font-size: 12px; }
+
+    /* ── Help box ────────────────────────────────────────────  */
+    .help-box {
+      background: rgba(167,139,250,.05);
+      border: 1px solid rgba(167,139,250,.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 12px;
+      color: rgba(232,232,234,.65);
+      line-height: 1.8;
+    }
+    .help-box code { background: var(--bg3); padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 11px; color: var(--accent); }
+
+    /* ── Scrollbar ───────────────────────────────────────────  */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(232,232,234,.12); border-radius: 99px; }
+
+    /* ── Image tab switcher ──────────────────────────────────  */
+    .img-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+    .img-tab {
+      padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
+      background: none; color: var(--muted); font-size: 10px; letter-spacing: .1em; cursor: pointer;
+      transition: all .12s; font-family: inherit;
+    }
+    .img-tab.on { background: rgba(232,232,234,.08); color: var(--ink); border-color: var(--line2); }
+  </style>
+</head>
+<body>
+
+<!-- ── Topbar ──────────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="brand">
+    <div class="mark"></div>
+    Flow Studio
+    <span class="admin-badge">Admin</span>
+  </div>
+  <div class="top-actions">
+    <div class="status-row" id="gh-status-row">
+      <div class="dot-live" id="gh-dot"></div>
+      <span id="gh-status-text">本地已儲存</span>
+    </div>
+    <button class="btn" onclick="exportJSON()">↓ 匯出 JSON</button>
+    <button class="btn btn-success" onclick="saveAll()">✓ 儲存全部</button>
+    <button class="btn" id="btn-publish" onclick="publishToGitHub()" title="將資料發佈到 GitHub Pages">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+      發佈到 GitHub
+    </button>
+    <a href="index.html" target="_blank" class="btn btn-accent">↗ 預覽網站</a>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────── -->
+  <div class="sidebar">
+    <div class="sb-group">
+      <div class="sb-label">總覽</div>
+      <button class="nav-item active" data-page="dashboard">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-label">內容管理</div>
+      <button class="nav-item" data-page="hero">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+        Hero 主視覺
+      </button>
+      <button class="nav-item" data-page="works">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        作品 Works
+      </button>
+      <button class="nav-item" data-page="concepts">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+        概念卡片
+      </button>
+      <button class="nav-item" data-page="process">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        設計流程
+      </button>
+      <button class="nav-item" data-page="others">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 5-5 4 4 4-5 5 6"/></svg>
+        Others 圖片
+      </button>
+      <button class="nav-item" data-page="ceramics">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 2.4 1 4.5 2.5 6L9 22h6l1.5-7C18 13.5 19 11.4 19 9c0-4-3-7-7-7z"/></svg>
+        陶瓷作品
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-label">基本資訊</div>
+      <button class="nav-item" data-page="about">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        About
+      </button>
+      <button class="nav-item" data-page="contact">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Contact
+      </button>
+    </div>
+    <div class="sb-group">
+      <div class="sb-label">資料</div>
+      <button class="nav-item" data-page="github">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+        GitHub 設定
+      </button>
+      <button class="nav-item" onclick="exportJSON()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        匯出 JSON
+      </button>
+      <button class="nav-item" onclick="document.getElementById('importFile').click()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        匯入 JSON
+      </button>
+      <button class="nav-item danger" onclick="resetAll()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4"/></svg>
+        重置資料
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+  </div>
+
+  <!-- ── Main area ───────────────────────────────────────────── -->
+  <div class="main">
+    <div class="main-inner">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-hd">
+          <div><div class="page-title">Dashboard</div><div class="page-sub">Flow Studio 後台管理系統</div></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-n" id="s-works">0</div><div class="stat-lbl">Works</div></div>
+          <div class="stat-card"><div class="stat-n" id="s-concepts">0</div><div class="stat-lbl">Concept Cards</div></div>
+          <div class="stat-card"><div class="stat-n" id="s-ceramics">0</div><div class="stat-lbl">Ceramics</div></div>
+          <div class="stat-card"><div class="stat-n" id="s-others">0</div><div class="stat-lbl">Others</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">快速操作</div></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-accent" onclick="goTo('works');openWorkModal()">+ 新增作品</button>
+            <button class="btn" onclick="goTo('concepts');openConceptModal()">+ 新增概念卡片</button>
+            <button class="btn" onclick="goTo('others')">管理 Others 圖片</button>
+            <button class="btn" onclick="goTo('hero')">編輯主視覺文字</button>
+          </div>
+        </div>
+        <div class="help-box">
+          <strong style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:6px">使用說明</strong>
+          所有修改都會自動存入瀏覽器的 localStorage，重新整理後資料不會消失。<br>
+          設定好 GitHub 後，點「<strong style="color:var(--ink)">發佈到 GitHub</strong>」即可直接更新線上網站。<br>
+          圖片可以輸入 URL（如 <code>p1_a.png</code>）或直接拖曳/點擊上傳，上傳後轉為 base64 儲存。<br>
+          建議定期點「匯出 JSON」做備份，可隨時用「匯入 JSON」還原。
+        </div>
+      </div>
+
+      <!-- CERAMICS -->
+      <div class="page" id="page-ceramics">
+        <div class="page-hd">
+          <div><div class="page-title">陶瓷作品</div><div class="page-sub">Ceramics 頁面的作品管理</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="saveCeramicsPage()">✓ 儲存頁面文字</button>
+            <button class="btn btn-accent" onclick="openCeramicModal()">+ 新增作品</button>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="panel-hd"><div class="panel-title">頁面標題 / 描述</div></div>
+          <div class="form-row">
+            <div class="fg"><label>頁面標題</label><input type="text" id="cp-title" placeholder="Ceramics"></div>
+            <div class="fg form-full"><label>副標題描述</label><textarea id="cp-sub" rows="2" placeholder="手工陶瓷作品——材質、重量、沉默。"></textarea></div>
+          </div>
+        </div>
+        <div class="works-grid" id="ceramics-admin-grid"></div>
+      </div>
+
+      <!-- GITHUB -->
+      <div class="page" id="page-github">
+        <div class="page-hd">
+          <div><div class="page-title">GitHub 設定</div><div class="page-sub">設定後即可一鍵將內容發佈到 GitHub Pages</div></div>
+          <button class="btn btn-success" onclick="saveGitHubSettings()">✓ 儲存設定</button>
+        </div>
+
+        <div class="help-box" style="margin-bottom:16px">
+          <strong style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:8px">設定步驟</strong>
+          <div style="counter-reset:steps;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--accent);font-size:11px;font-weight:600;flex-shrink:0">01</span> 前往 <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--accent);text-decoration:underline">GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)</a></div>
+            <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--accent);font-size:11px;font-weight:600;flex-shrink:0">02</span> 建立新 Token，勾選 <code>repo</code> 權限（需要能寫入 repo）</div>
+            <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--accent);font-size:11px;font-weight:600;flex-shrink:0">03</span> 複製 Token，貼到下方「Personal Access Token」欄位</div>
+            <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--accent);font-size:11px;font-weight:600;flex-shrink:0">04</span> 填入你的 GitHub 帳號和 repo 名稱，儲存</div>
+            <div style="display:flex;gap:10px;align-items:baseline"><span style="color:var(--accent);font-size:11px;font-weight:600;flex-shrink:0">05</span> 之後每次編輯完，點上方「發佈到 GitHub」即可自動更新網站</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">Repository 資訊</div></div>
+          <div class="form-row">
+            <div class="fg"><label>GitHub 帳號（Owner）</label><input type="text" id="gh-owner" placeholder="例如：kindredaimer"></div>
+            <div class="fg"><label>Repository 名稱</label><input type="text" id="gh-repo" placeholder="例如：flow-studio"></div>
+            <div class="fg"><label>Branch</label><input type="text" id="gh-branch" placeholder="main" value="main"></div>
+            <div class="fg"><label>data.json 路徑（通常不用改）</label><input type="text" id="gh-path" placeholder="data.json" value="data.json"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">驗證</div></div>
+          <div class="fg">
+            <label>Personal Access Token（Classic，需有 repo 權限）</label>
+            <div style="display:flex;gap:8px">
+              <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxx" style="flex:1">
+              <button class="btn btn-sm" onclick="toggleTokenVis()" id="btn-tok-toggle">顯示</button>
+            </div>
+            <div style="font-size:11px;color:rgba(232,232,234,.35);margin-top:5px">Token 只存在你的瀏覽器 localStorage，不會上傳到任何地方。</div>
+          </div>
+          <button class="btn btn-accent" onclick="testGitHubConnection()" style="margin-top:4px">🔗 測試連線</button>
+          <div id="gh-test-result" style="margin-top:10px;font-size:12px;display:none"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">發佈</div></div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.7">
+            點「發佈」會把目前後台的全部資料寫入 repo 裡的 <code>data.json</code>。<br>
+            GitHub Pages 會在約 <strong style="color:var(--ink)">30 秒 ~ 2 分鐘</strong>內自動重新部署，網站訪客就能看到更新。
+          </p>
+          <button class="btn btn-accent" onclick="publishToGitHub()" style="gap:7px">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+            立即發佈到 GitHub
+          </button>
+          <div id="publish-log" style="margin-top:14px;font-size:12px;color:var(--muted);line-height:1.8;display:none"></div>
+        </div>
+      </div>
+
+      <!-- HERO -->
+      <div class="page" id="page-hero">
+        <div class="page-hd">
+          <div><div class="page-title">Hero 主視覺</div><div class="page-sub">首頁大標與 Studio Card 內容</div></div>
+          <button class="btn btn-success" onclick="saveHero()">✓ 儲存</button>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">主文字</div></div>
+          <div class="fg"><label>Kicker（小標）</label><input type="text" id="h-kicker"></div>
+          <div class="fg"><label>Title（主標題）</label><textarea id="h-title" rows="2"></textarea></div>
+          <div class="fg"><label>Sub（描述）</label><textarea id="h-sub" rows="3"></textarea></div>
+        </div>
+        <div class="panel">
+          <div class="panel-hd"><div class="panel-title">Studio Card</div></div>
+          <div class="form-row">
+            <div class="fg"><label>Focus</label><input type="text" id="h-focus"></div>
+            <div class="fg"><label>Approach</label><input type="text" id="h-approach"></div>
+            <div class="fg form-full"><label>Output</label><input type="text" id="h-output"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORKS -->
+      <div class="page" id="page-works">
+        <div class="page-hd">
+          <div><div class="page-title">Works</div><div class="page-sub">Selected Works — 產品主卡片</div></div>
+          <button class="btn btn-accent" onclick="openWorkModal()">+ 新增作品</button>
+        </div>
+        <div class="works-grid" id="works-grid"></div>
+      </div>
+
+      <!-- CONCEPTS -->
+      <div class="page" id="page-concepts">
+        <div class="page-hd">
+          <div><div class="page-title">概念卡片</div><div class="page-sub">Works 區塊下方的小卡片</div></div>
+          <button class="btn btn-accent" onclick="openConceptModal()">+ 新增</button>
+        </div>
+        <div class="concept-list" id="concept-list"></div>
+      </div>
+
+      <!-- PROCESS -->
+      <div class="page" id="page-process">
+        <div class="page-hd">
+          <div><div class="page-title">設計流程</div><div class="page-sub">Process 區塊步驟</div></div>
+          <button class="btn btn-success" onclick="saveProcess()">✓ 儲存</button>
+        </div>
+        <div class="panel">
+          <div class="fg"><label>Subtitle</label><input type="text" id="proc-sub"></div>
+        </div>
+        <div class="steps-list" id="steps-list"></div>
+        <button class="btn" style="margin-top:10px" onclick="addStep()">+ 新增步驟</button>
+      </div>
+
+      <!-- OTHERS -->
+      <div class="page" id="page-others">
+        <div class="page-hd">
+          <div><div class="page-title">Others</div><div class="page-sub">Experiments, side projects, visual explorations</div></div>
+          <button class="btn btn-accent" onclick="addOther()">+ 新增圖片</button>
+        </div>
+        <div class="others-grid" id="others-grid"></div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="page" id="page-about">
+        <div class="page-hd">
+          <div><div class="page-title">About</div><div class="page-sub">工作室定位與能力</div></div>
+          <button class="btn btn-success" onclick="saveAbout()">✓ 儲存</button>
+        </div>
+        <div class="panel">
+          <div class="fg"><label>Positioning</label><textarea id="ab-pos" rows="3"></textarea></div>
+          <div class="fg"><label>Capabilities</label><textarea id="ab-cap" rows="2"></textarea></div>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="page" id="page-contact">
+        <div class="page-hd">
+          <div><div class="page-title">Contact</div><div class="page-sub">聯絡方式</div></div>
+          <button class="btn btn-success" onclick="saveContact()">✓ 儲存</button>
+        </div>
+        <div class="panel">
+          <div class="fg"><label>姓名</label><input type="text" id="ct-name"></div>
+          <div class="form-row">
+            <div class="fg"><label>Instagram Handle（例如 @kindredaimer）</label><input type="text" id="ct-ig"></div>
+            <div class="fg"><label>Instagram URL</label><input type="url" id="ct-ig-url"></div>
+            <div class="fg"><label>Tel</label><input type="tel" id="ct-tel"></div>
+            <div class="fg"><label>Email</label><input type="email" id="ct-email"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /main-inner -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ── Work Modal ─────────────────────────────────────────────── -->
+<div class="overlay" id="ov-work" onclick="closeWorkModal(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="wm-title-label">新增作品</div>
+      <button class="modal-close" onclick="closeWorkModalDirect()">×</button>
+    </div>
+    <input type="hidden" id="wm-idx">
+    <div class="form-row">
+      <div class="fg form-full"><label>作品名稱</label><input type="text" id="wm-name" placeholder='"Port"ery 1'></div>
+      <div class="fg form-full"><label>描述文字</label><input type="text" id="wm-desc" placeholder="Quiet hardware. Heavy clarity."></div>
+    </div>
+    <hr>
+    <!-- Image A -->
+    <div class="fg">
+      <label>主圖 Image A（顯示用）</label>
+      <input type="text" id="wm-a-url" placeholder="檔名或 URL，例如 p1_a.png" style="margin-bottom:8px" oninput="syncImgUrl('a')">
+      <div class="img-zone" id="drop-a"
+        ondragover="ev.preventDefault();this.classList.add('dragging')"
+        ondragleave="this.classList.remove('dragging')"
+        ondrop="dropImg(event,'a')">
+        <img id="prev-a" class="img-zone-preview">
+        <div id="hint-a" class="img-hint"><strong>⬆</strong>拖曳或點擊上傳 Image A</div>
+        <input type="file" accept="image/*" onchange="uploadImg(event,'a')">
+      </div>
+    </div>
+    <!-- Image B -->
+    <div class="fg">
+      <label>Detail 圖 Image B（View Detail 時顯示）</label>
+      <input type="text" id="wm-b-url" placeholder="檔名或 URL，例如 p1_b.png" style="margin-bottom:8px" oninput="syncImgUrl('b')">
+      <div class="img-zone" id="drop-b"
+        ondragover="event.preventDefault();this.classList.add('dragging')"
+        ondragleave="this.classList.remove('dragging')"
+        ondrop="dropImg(event,'b')">
+        <img id="prev-b" class="img-zone-preview">
+        <div id="hint-b" class="img-hint"><strong>⬆</strong>拖曳或點擊上傳 Image B</div>
+        <input type="file" accept="image/*" onchange="uploadImg(event,'b')">
+      </div>
+    </div>
+    <hr>
+    <div class="fg">
+      <label>Meta 資訊（Key / Value）</label>
+      <div class="meta-rows-editor" id="meta-editor"></div>
+      <button class="btn btn-sm" style="margin-top:8px" onclick="addMetaRow()">+ 新增一行</button>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeWorkModalDirect()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveWork()">儲存作品</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Concept Modal ──────────────────────────────────────────── -->
+<div class="overlay" id="ov-concept" onclick="closeConceptModal(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="cm-title-label">新增概念卡片</div>
+      <button class="modal-close" onclick="closeConceptModalDirect()">×</button>
+    </div>
+    <input type="hidden" id="cm-idx">
+    <div class="fg">
+      <label>Tags</label>
+      <div class="tags-wrap" id="cm-tags"></div>
+      <div class="tag-add-row">
+        <input type="text" id="cm-tag-in" placeholder="輸入 tag，例如 Concept" onkeydown="if(event.key==='Enter'){event.preventDefault();addTag()}">
+        <button class="btn btn-sm" onclick="addTag()">+ Add</button>
+      </div>
+    </div>
+    <div class="fg"><label>Title</label><input type="text" id="cm-name" placeholder="Event Horizon Dock"></div>
+    <div class="fg"><label>Description</label><textarea id="cm-desc" placeholder="描述這個概念..."></textarea></div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeConceptModalDirect()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveConcept()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Ceramic Modal ──────────────────────────────────────────── -->
+<div class="overlay" id="ov-ceramic" onclick="closeCeramicModal(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="cer-title-label">新增陶瓷作品</div>
+      <button class="modal-close" onclick="closeCeramicModalDirect()">×</button>
+    </div>
+    <input type="hidden" id="cer-idx">
+    <div class="fg"><label>作品名稱</label><input type="text" id="cer-name" placeholder="例如：黑釉茶碗"></div>
+    <div class="form-row">
+      <div class="fg"><label>年份</label><input type="text" id="cer-year" placeholder="2024"></div>
+      <div class="fg"><label>圖片檔名（放在 repo 根目錄）</label><input type="text" id="cer-img" placeholder="ceramics/bowl_01.jpg"></div>
+    </div>
+    <div class="fg"><label>描述</label><textarea id="cer-desc" placeholder="手拉坯，柴燒，自然落灰釉…"></textarea></div>
+    <div class="fg">
+      <label>Tags</label>
+      <div class="tags-wrap" id="cer-tags-wrap"></div>
+      <div class="tag-add-row">
+        <input type="text" id="cer-tag-in" placeholder="例如：茶器、柴燒、黑釉" onkeydown="if(event.key==='Enter'){event.preventDefault();addCeramicTag()}">
+        <button class="btn btn-sm" onclick="addCeramicTag()">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn" onclick="closeCeramicModalDirect()">Cancel</button>
+      <button class="btn btn-accent" onclick="saveCeramic()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ──────────────────────────────────────────────────── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DEFAULT DATA
+// ══════════════════════════════════════════════
+const DEFAULTS = {
+  hero: {
+    kicker: "Black field • gravitational flow",
+    title: "Design that pulls attention into focus.",
+    sub: "Flow Studio is a product design practice built around continuity—where intent, form, and experience bend together.\nMinimal surface, dense thinking. Quiet visuals, heavy clarity.",
+    card: { focus: "Product / Interaction", approach: "Field-driven minimalism", output: "Concept → Prototype → System" }
+  },
+  works: [
+    { id:"w1", name:'"Port"ery 1', desc:"Because the universe is vast and indifferent.", imgA:"images/p1_a.png", imgB:"images/p1_b.png", meta:[{k:"Category",v:"Electronics"},{k:"Material",v:"Matte black"}] },
+    { id:"w2", name:"Flow Minimum", desc:"Quiet hardware. Heavy clarity.", imgA:"images/p2_a.png", imgB:"images/p2_b.png", meta:[{k:"Category",v:"Electronics"},{k:"Feature",v:"CD Playback"}] },
+    { id:"w3", name:"Flow X", desc:"A field, not a stage.", imgA:"images/p3_a.png", imgB:"images/p3_b.png", meta:[{k:"Category",v:"Gaming"},{k:"CMF",v:"Dark matte"}] },
+    { id:"w4", name:"Flow Wave", desc:"Carry the field — protection shaped by motion.", imgA:"images/p4_a.png", imgB:"images/p4_b.png", meta:[{k:"Category",v:"Bag"},{k:"Style",v:"Orbit ridges"}] },
+    { id:"w5", name:"Flow mute", desc:"Sound has mass — a speaker as gravity source.", imgA:"images/p5_a.png", imgB:"images/p5_b.png", meta:[{k:"Category",v:"Audio"},{k:"Driver",v:"Full-range"}] },
+    { id:"w6", name:"Flow Flux", desc:"Designed to move. Built to endure.", imgA:"images/p6_a.png", imgB:"images/p6_b.png", meta:[{k:"Category",v:"Apparel"},{k:"Fit",v:"Relaxed"}] }
+  ],
+  concepts: [
+    { id:"c1", tags:["Concept","Hardware"], name:"Event Horizon Dock", desc:"將「插拔、擴充、收納」做成一個無干擾的連續動作，讓設備進入工作狀態像被重力拉入軌道。" },
+    { id:"c2", tags:["System","Interface"], name:"Gravitational UI Field", desc:"以「場」取代「頁」：資訊密度沿中心聚集，互動回饋低頻、低對比，建立長時間專注的節奏。" },
+    { id:"c3", tags:["Experimental","Generative"], name:"Singularity Visual Engine", desc:"用生成式「流場」做視覺底層：永遠不完全重複、低頻漂移，成為網站與展示的靜默引力。" }
+  ],
+  process: {
+    subtitle: "極簡不是減法，而是把「決策密度」集中到核心。",
+    steps: [
+      { num:"01", title:"Field Definition", desc:"定義「重力中心」：使用者的真正動機。" },
+      { num:"02", title:"Orbit Mapping", desc:"把需求轉成可運行的軌道與節奏。" },
+      { num:"03", title:"Prototype", desc:"用原型測「吸引力」與低干擾回饋。" },
+      { num:"04", title:"System", desc:"收斂成系統：結構、CMF、一致性。" }
+    ]
+  },
+  others: [
+    { id:"o1", src:"images/other_1.png", alt:"Other work 1" },
+    { id:"o2", src:"images/other_2.png", alt:"Other work 2" },
+    { id:"o3", src:"images/other_3.png", alt:"Other work 3" }
+  ],
+  about: {
+    positioning: "Flow Studio builds product experiences that feel inevitable—where each interaction is a small continuation of the last.",
+    capabilities: "Product strategy • Industrial design • Interaction design • Prototyping • Design systems."
+  },
+  contact: {
+    name:"施奕廷 Draimer",
+    ig:"@kindredaimer",
+    igUrl:"https://www.instagram.com/kindredaimer/?hl=zh-tw",
+    tel:"0938-021-687",
+    email:"draimer@flowstudio.design"
+  },
+  ceramics: [],
+  ceramicsPage: { title:"Ceramics", sub:"手工陶瓷作品——材質、重量、沉默。每一件器物都是一次與重力的對話。" }
+};
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+let D = {};
+let tmpImgA = '', tmpImgB = '';
+let editingTags = [];
+
+function load() {
+  const raw = localStorage.getItem('fs_data');
+  D = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULTS));
+  if (!D.ceramics)     D.ceramics = [];
+  if (!D.ceramicsPage) D.ceramicsPage = { title:'Ceramics', sub:'手工陶瓷作品——材質、重量、沉默。每一件器物都是一次與重力的對話。' };
+}
+function persist() {
+  localStorage.setItem('fs_data', JSON.stringify(D));
+  setGHStatus('local');
+}
+function saveAll() {
+  persist();
+  toast('✓ 所有資料已儲存', 'ok');
+}
+
+// ══════════════════════════════════════════════
+//  CERAMICS
+// ══════════════════════════════════════════════
+let editingCeramicTags = [];
+
+function renderCeramicsAdmin() {
+  sv('cp-title', D.ceramicsPage?.title || '');
+  sv('cp-sub',   D.ceramicsPage?.sub   || '');
+  const g = document.getElementById('ceramics-admin-grid');
+  if (!D.ceramics || !D.ceramics.length) {
+    g.innerHTML = '<div class="empty" style="grid-column:1/-1">尚無陶瓷作品，點「新增作品」開始</div>'; return;
+  }
+  g.innerHTML = (D.ceramics||[]).map((c,i) => `
+    <div class="work-card">
+      ${c.img
+        ? `<img class="work-card-thumb" src="${esc(c.img)}" onerror="this.style.display='none'">`
+        : `<div class="work-card-no-thumb">NO IMAGE</div>`}
+      <div class="work-card-body">
+        <div class="work-card-name">${esc(c.name)}</div>
+        <div class="work-card-desc">${esc(c.desc||'')}</div>
+        <div class="work-card-meta">
+          ${(c.tags||[]).map(t=>`<span class="meta-pill">${esc(t)}</span>`).join('')}
+          ${c.year?`<span class="meta-pill">${esc(c.year)}</span>`:''}
+        </div>
+        <div class="work-card-actions">
+          <button class="btn btn-sm" onclick="openCeramicModal(${i})">編輯</button>
+          <button class="btn btn-sm btn-danger" onclick="delCeramic(${i})">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function saveCeramicsPage() {
+  if (!D.ceramicsPage) D.ceramicsPage = {};
+  D.ceramicsPage.title = v('cp-title');
+  D.ceramicsPage.sub   = v('cp-sub');
+  persist(); toast('✓ 頁面文字已儲存','ok');
+}
+
+function openCeramicModal(idx) {
+  editingCeramicTags = [];
+  const isEdit = idx !== undefined;
+  document.getElementById('cer-title-label').textContent = isEdit ? '編輯陶瓷作品' : '新增陶瓷作品';
+  document.getElementById('cer-idx').value = isEdit ? idx : '';
+  if (isEdit) {
+    const c = D.ceramics[idx];
+    sv('cer-name', c.name); sv('cer-year', c.year||'');
+    sv('cer-img', c.img||''); sv('cer-desc', c.desc||'');
+    sv('cer-tag-in','');
+    editingCeramicTags = [...(c.tags||[])];
+  } else {
+    sv('cer-name',''); sv('cer-year',''); sv('cer-img',''); sv('cer-desc',''); sv('cer-tag-in','');
+  }
+  renderCeramicTagsUI();
+  open('ov-ceramic');
+}
+function closeCeramicModal(e) { if(e.target.id==='ov-ceramic') closeCeramicModalDirect(); }
+function closeCeramicModalDirect() { close('ov-ceramic'); }
+
+function renderCeramicTagsUI() {
+  document.getElementById('cer-tags-wrap').innerHTML = editingCeramicTags.map((t,i) =>
+    `<div class="tag-chip">${esc(t)}<button onclick="rmCeramicTag(${i})">×</button></div>`).join('');
+}
+function addCeramicTag() {
+  const inp = document.getElementById('cer-tag-in');
+  const val = inp.value.trim(); if(!val) return;
+  editingCeramicTags.push(val); inp.value=''; renderCeramicTagsUI();
+}
+function rmCeramicTag(i) { editingCeramicTags.splice(i,1); renderCeramicTagsUI(); }
+
+function saveCeramic() {
+  const name = v('cer-name').trim(); if(!name){ toast('請輸入作品名稱','err'); return; }
+  const c = {
+    id: 'cer'+Date.now(),
+    name, year: v('cer-year').trim(),
+    img:  v('cer-img').trim(),
+    desc: v('cer-desc').trim(),
+    tags: [...editingCeramicTags]
+  };
+  const idx = v('cer-idx');
+  if (!D.ceramics) D.ceramics = [];
+  if (idx!=='') D.ceramics[+idx] = {...c, id: D.ceramics[+idx].id};
+  else D.ceramics.push(c);
+  persist(); closeCeramicModalDirect(); renderCeramicsAdmin(); toast('✓ 已儲存','ok');
+}
+function delCeramic(i) {
+  if(!confirm('確定刪除？')) return;
+  D.ceramics.splice(i,1); persist(); renderCeramicsAdmin(); toast('已刪除','ok');
+}
+
+// ══════════════════════════════════════════════
+//  GITHUB SETTINGS
+// ══════════════════════════════════════════════
+let GH = {};
+
+function loadGHSettings() {
+  const raw = localStorage.getItem('fs_gh');
+  GH = raw ? JSON.parse(raw) : { owner:'', repo:'', branch:'main', path:'data.json', token:'' };
+}
+function saveGitHubSettings() {
+  GH.owner  = v('gh-owner').trim();
+  GH.repo   = v('gh-repo').trim();
+  GH.branch = v('gh-branch').trim() || 'main';
+  GH.path   = v('gh-path').trim()   || 'data.json';
+  GH.token  = v('gh-token').trim();
+  localStorage.setItem('fs_gh', JSON.stringify(GH));
+  toast('✓ GitHub 設定已儲存', 'ok');
+}
+function renderGitHub() {
+  sv('gh-owner',  GH.owner);
+  sv('gh-repo',   GH.repo);
+  sv('gh-branch', GH.branch || 'main');
+  sv('gh-path',   GH.path   || 'data.json');
+  sv('gh-token',  GH.token);
+}
+function toggleTokenVis() {
+  const inp = document.getElementById('gh-token');
+  const btn = document.getElementById('btn-tok-toggle');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '顯示' : '隱藏';
+}
+
+// Test connection
+async function testGitHubConnection() {
+  const r = document.getElementById('gh-test-result');
+  r.style.display = 'block';
+  r.style.color = 'var(--muted)';
+  r.textContent = '⏳ 連線測試中...';
+  saveGitHubSettings();
+  if (!GH.owner || !GH.repo || !GH.token) {
+    r.style.color = 'var(--danger)'; r.textContent = '✗ 請先填入帳號、Repo 名稱與 Token。'; return;
+  }
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH.owner}/${GH.repo}`, {
+      headers: { Authorization: `token ${GH.token}`, Accept: 'application/vnd.github+json' }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      r.style.color = 'var(--success)';
+      r.textContent = `✓ 連線成功！Repo: ${data.full_name}，預設 branch: ${data.default_branch}`;
+    } else {
+      const err = await res.json();
+      r.style.color = 'var(--danger)';
+      r.textContent = `✗ 錯誤 ${res.status}：${err.message}`;
+    }
+  } catch(e) {
+    r.style.color = 'var(--danger)'; r.textContent = '✗ 網路錯誤，請確認 Token 與網路狀態。';
+  }
+}
+
+// Publish to GitHub
+async function publishToGitHub() {
+  saveGitHubSettings();
+  const log = document.getElementById('publish-log');
+  const btn  = document.getElementById('btn-publish');
+  if (!GH.owner || !GH.repo || !GH.token) {
+    toast('請先到「GitHub 設定」填入帳號、Repo 與 Token', 'err');
+    goTo('github'); return;
+  }
+
+  const setLog = (msg, color) => {
+    if (log) { log.style.display = 'block'; log.style.color = color || 'var(--muted)'; log.innerHTML = msg; }
+  };
+
+  btn.textContent = '發佈中...';
+  btn.disabled = true;
+  setGHStatus('publishing');
+
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(D, null, 2))));
+  const apiUrl  = `https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+  const headers = { Authorization: `token ${GH.token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+
+  try {
+    // Step 1: Get current file SHA (needed for update)
+    setLog('⏳ 取得目前檔案狀態...', 'var(--muted)');
+    let sha = null;
+    const getRes = await fetch(`${apiUrl}?ref=${GH.branch}`, { headers });
+    if (getRes.ok) {
+      const existing = await getRes.json();
+      sha = existing.sha;
+    } else if (getRes.status !== 404) {
+      const err = await getRes.json();
+      throw new Error(`取得檔案失敗 (${getRes.status}): ${err.message}`);
+    }
+
+    // Step 2: Put file
+    setLog('⏳ 上傳 data.json 到 GitHub...', 'var(--muted)');
+    const body = { message: `Update data.json via Flow Studio Admin — ${new Date().toLocaleString('zh-TW')}`, content, branch: GH.branch };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, { method: 'PUT', headers, body: JSON.stringify(body) });
+    if (!putRes.ok) {
+      const err = await putRes.json();
+      throw new Error(`上傳失敗 (${putRes.status}): ${err.message}`);
+    }
+
+    const result = await putRes.json();
+    const commitUrl = result.commit?.html_url || `https://github.com/${GH.owner}/${GH.repo}/commits/${GH.branch}`;
+    const siteUrl   = `https://${GH.owner}.github.io/${GH.repo}/`;
+    setLog(
+      `✓ 發佈成功！<br>` +
+      `<a href="${commitUrl}" target="_blank" style="color:var(--accent)">查看 Commit ↗</a> &nbsp;|&nbsp; ` +
+      `<a href="${siteUrl}" target="_blank" style="color:var(--accent)">前往網站 ↗</a><br>` +
+      `<span style="color:rgba(232,232,234,.4);font-size:11px">GitHub Pages 通常需要 30 秒 ~ 2 分鐘才會部署完成</span>`,
+      'var(--success)'
+    );
+    setGHStatus('published');
+    toast('✓ 已發佈到 GitHub！', 'ok');
+
+  } catch(e) {
+    setLog(`✗ ${e.message}`, 'var(--danger)');
+    setGHStatus('error');
+    toast('發佈失敗：' + e.message, 'err');
+  } finally {
+    btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg> 發佈到 GitHub`;
+    btn.disabled = false;
+  }
+}
+
+// Status indicator
+function setGHStatus(state) {
+  const dot  = document.getElementById('gh-dot');
+  const text = document.getElementById('gh-status-text');
+  if (!dot || !text) return;
+  const map = {
+    local:      { color:'rgba(232,232,234,.3)',  shadow:'none',                             label:'本地已儲存' },
+    publishing: { color:'var(--warn)',            shadow:'0 0 6px rgba(251,146,60,.5)',      label:'發佈中...' },
+    published:  { color:'var(--success)',         shadow:'0 0 6px rgba(74,222,128,.5)',      label:'已發佈' },
+    error:      { color:'var(--danger)',          shadow:'0 0 6px rgba(248,113,113,.5)',     label:'發佈失敗' },
+  };
+  const s = map[state] || map.local;
+  dot.style.background  = s.color;
+  dot.style.boxShadow   = s.shadow;
+  text.textContent      = s.label;
+}
+
+
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id)?.classList.add('active');
+  document.querySelector(`.nav-item[data-page="${id}"]`)?.classList.add('active');
+  render(id);
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(btn => {
+  btn.addEventListener('click', () => goTo(btn.dataset.page));
+});
+
+function render(id) {
+  if (id === 'dashboard') renderDash();
+  if (id === 'hero')      renderHero();
+  if (id === 'works')     renderWorks();
+  if (id === 'concepts')  renderConcepts();
+  if (id === 'process')   renderProcess();
+  if (id === 'others')    renderOthers();
+  if (id === 'about')     renderAbout();
+  if (id === 'contact')   renderContact();
+  if (id === 'github')    renderGitHub();
+  if (id === 'ceramics')  renderCeramicsAdmin();
+}
+
+// ══════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════
+function renderDash() {
+  document.getElementById('s-works').textContent    = D.works.length;
+  document.getElementById('s-concepts').textContent = D.concepts.length;
+  document.getElementById('s-ceramics').textContent = (D.ceramics||[]).length;
+  document.getElementById('s-others').textContent   = D.others.length;
+}
+
+// ══════════════════════════════════════════════
+//  HERO
+// ══════════════════════════════════════════════
+function renderHero() {
+  document.getElementById('h-kicker').value   = D.hero.kicker;
+  document.getElementById('h-title').value    = D.hero.title;
+  document.getElementById('h-sub').value      = D.hero.sub;
+  document.getElementById('h-focus').value    = D.hero.card.focus;
+  document.getElementById('h-approach').value = D.hero.card.approach;
+  document.getElementById('h-output').value   = D.hero.card.output;
+}
+function saveHero() {
+  D.hero.kicker        = v('h-kicker');
+  D.hero.title         = v('h-title');
+  D.hero.sub           = v('h-sub');
+  D.hero.card.focus    = v('h-focus');
+  D.hero.card.approach = v('h-approach');
+  D.hero.card.output   = v('h-output');
+  persist(); toast('✓ Hero 已儲存', 'ok');
+}
+
+// ══════════════════════════════════════════════
+//  WORKS
+// ══════════════════════════════════════════════
+function renderWorks() {
+  const g = document.getElementById('works-grid');
+  if (!D.works.length) { g.innerHTML = '<div class="empty">尚無作品，點「新增作品」開始</div>'; return; }
+  g.innerHTML = D.works.map((w, i) => `
+    <div class="work-card">
+      ${w.imgA
+        ? `<img class="work-card-thumb" src="${esc(w.imgA)}" onerror="this.style.display='none'">`
+        : `<div class="work-card-no-thumb">NO IMAGE</div>`}
+      <div class="work-card-body">
+        <div class="work-card-name">${esc(w.name)}</div>
+        <div class="work-card-desc">${esc(w.desc)}</div>
+        <div class="work-card-meta">
+          ${(w.meta||[]).map(m=>`<span class="meta-pill">${esc(m.k)}: ${esc(m.v)}</span>`).join('')}
+        </div>
+        <div class="work-card-actions">
+          <button class="btn btn-sm" onclick="openWorkModal(${i})">編輯</button>
+          <button class="btn btn-sm btn-danger" onclick="delWork(${i})">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openWorkModal(idx) {
+  tmpImgA = ''; tmpImgB = '';
+  const isEdit = idx !== undefined;
+  document.getElementById('wm-title-label').textContent = isEdit ? '編輯作品' : '新增作品';
+  document.getElementById('wm-idx').value = isEdit ? idx : '';
+
+  if (isEdit) {
+    const w = D.works[idx];
+    sv('wm-name', w.name);
+    sv('wm-desc', w.desc);
+    sv('wm-a-url', w.imgA || '');
+    sv('wm-b-url', w.imgB || '');
+    tmpImgA = w.imgA || '';
+    tmpImgB = w.imgB || '';
+    setPrev('a', tmpImgA);
+    setPrev('b', tmpImgB);
+    document.getElementById('meta-editor').innerHTML = '';
+    (w.meta || []).forEach(m => addMetaRowWith(m.k, m.v));
+  } else {
+    sv('wm-name',''); sv('wm-desc',''); sv('wm-a-url',''); sv('wm-b-url','');
+    setPrev('a',''); setPrev('b','');
+    document.getElementById('meta-editor').innerHTML = '';
+    addMetaRowWith('','');
+  }
+  open('ov-work');
+}
+function closeWorkModal(e) { if (e.target.id==='ov-work') closeWorkModalDirect(); }
+function closeWorkModalDirect() { close('ov-work'); }
+
+function saveWork() {
+  const name = v('wm-name').trim();
+  if (!name) { toast('請輸入作品名稱', 'err'); return; }
+  const imgA = tmpImgA || v('wm-a-url').trim();
+  const imgB = tmpImgB || v('wm-b-url').trim();
+  const keys = document.querySelectorAll('#meta-editor .mk');
+  const vals = document.querySelectorAll('#meta-editor .mv');
+  const meta = [];
+  keys.forEach((k,i) => { if(k.value.trim()) meta.push({k:k.value.trim(),v:vals[i].value.trim()}); });
+
+  const w = { id: 'w'+Date.now(), name, desc: v('wm-desc').trim(), imgA, imgB, meta };
+  const idx = v('wm-idx');
+  if (idx !== '') D.works[+idx] = {...D.works[+idx], ...w, id: D.works[+idx].id};
+  else D.works.push(w);
+  persist(); closeWorkModalDirect(); renderWorks(); toast('✓ 作品已儲存', 'ok');
+}
+function delWork(i) {
+  if (!confirm('確定刪除這個作品？')) return;
+  D.works.splice(i,1); persist(); renderWorks(); toast('已刪除', 'ok');
+}
+
+// Meta rows
+function addMetaRow() { addMetaRowWith('',''); }
+function addMetaRowWith(k, v_) {
+  const el = document.createElement('div');
+  el.className = 'meta-edit-row';
+  el.innerHTML = `
+    <input type="text" class="mk" placeholder="Key，例如 Category" value="${esc(k)}">
+    <input type="text" class="mv" placeholder="Value，例如 Electronics" value="${esc(v_)}">
+    <button class="btn btn-sm btn-danger" onclick="this.closest('.meta-edit-row').remove()">−</button>`;
+  document.getElementById('meta-editor').appendChild(el);
+}
+
+// Image upload helpers
+function syncImgUrl(ab) {
+  const url = v(`wm-${ab}-url`).trim();
+  if (ab==='a') { tmpImgA = url; setPrev('a', url); }
+  else { tmpImgB = url; setPrev('b', url); }
+}
+function uploadImg(e, ab) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    if (ab==='a') { tmpImgA = ev.target.result; setPrev('a', tmpImgA); }
+    else { tmpImgB = ev.target.result; setPrev('b', tmpImgB); }
+  };
+  r.readAsDataURL(f);
+}
+function dropImg(e, ab) {
+  e.preventDefault();
+  document.getElementById('drop-'+ab).classList.remove('dragging');
+  const f = e.dataTransfer.files[0];
+  if (!f || !f.type.startsWith('image/')) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    if (ab==='a') { tmpImgA = ev.target.result; setPrev('a', tmpImgA); }
+    else { tmpImgB = ev.target.result; setPrev('b', tmpImgB); }
+  };
+  r.readAsDataURL(f);
+}
+function setPrev(ab, src) {
+  const img = document.getElementById('prev-'+ab);
+  const hint = document.getElementById('hint-'+ab);
+  if (src) { img.src = src; img.style.display = 'block'; hint.style.display = 'none'; }
+  else { img.style.display = 'none'; hint.style.display = 'block'; }
+}
+
+// ══════════════════════════════════════════════
+//  CONCEPTS
+// ══════════════════════════════════════════════
+function renderConcepts() {
+  const el = document.getElementById('concept-list');
+  if (!D.concepts.length) { el.innerHTML = '<div class="empty">尚無概念卡片</div>'; return; }
+  el.innerHTML = D.concepts.map((c,i) => `
+    <div class="concept-item">
+      <div class="concept-body">
+        <div class="concept-tags">${(c.tags||[]).map(t=>`<span class="ctag">${esc(t)}</span>`).join('')}</div>
+        <div class="concept-name">${esc(c.name)}</div>
+        <div class="concept-desc">${esc(c.desc)}</div>
+      </div>
+      <div class="concept-actions">
+        <button class="btn btn-sm" onclick="openConceptModal(${i})">編輯</button>
+        <button class="btn btn-sm btn-danger" onclick="delConcept(${i})">刪除</button>
+      </div>
+    </div>`).join('');
+}
+function openConceptModal(idx) {
+  editingTags = [];
+  const isEdit = idx !== undefined;
+  document.getElementById('cm-title-label').textContent = isEdit ? '編輯概念卡片' : '新增概念卡片';
+  document.getElementById('cm-idx').value = isEdit ? idx : '';
+  if (isEdit) {
+    const c = D.concepts[idx];
+    sv('cm-name', c.name);
+    sv('cm-desc', c.desc);
+    sv('cm-tag-in', '');
+    editingTags = [...(c.tags||[])];
+  } else {
+    sv('cm-name',''); sv('cm-desc',''); sv('cm-tag-in','');
+  }
+  renderTagsUI();
+  open('ov-concept');
+}
+function closeConceptModal(e) { if(e.target.id==='ov-concept') closeConceptModalDirect(); }
+function closeConceptModalDirect() { close('ov-concept'); }
+
+function renderTagsUI() {
+  document.getElementById('cm-tags').innerHTML = editingTags.map((t,i) =>
+    `<div class="tag-chip">${esc(t)}<button onclick="rmTag(${i})">×</button></div>`).join('');
+}
+function addTag() {
+  const inp = document.getElementById('cm-tag-in');
+  const val = inp.value.trim(); if (!val) return;
+  editingTags.push(val); inp.value = ''; renderTagsUI();
+}
+function rmTag(i) { editingTags.splice(i,1); renderTagsUI(); }
+
+function saveConcept() {
+  const name = v('cm-name').trim(); if (!name) { toast('請輸入標題','err'); return; }
+  const c = { id:'c'+Date.now(), tags:[...editingTags], name, desc: v('cm-desc').trim() };
+  const idx = v('cm-idx');
+  if (idx!=='') D.concepts[+idx] = {...c, id: D.concepts[+idx].id};
+  else D.concepts.push(c);
+  persist(); closeConceptModalDirect(); renderConcepts(); toast('✓ 已儲存','ok');
+}
+function delConcept(i) {
+  if (!confirm('確定刪除？')) return;
+  D.concepts.splice(i,1); persist(); renderConcepts(); toast('已刪除','ok');
+}
+
+// ══════════════════════════════════════════════
+//  PROCESS
+// ══════════════════════════════════════════════
+function renderProcess() {
+  sv('proc-sub', D.process.subtitle);
+  const el = document.getElementById('steps-list');
+  el.innerHTML = D.process.steps.map((s,i) => `
+    <div class="step-row">
+      <div class="step-num-badge">${esc(s.num)}</div>
+      <div class="step-inputs">
+        <input type="text" value="${esc(s.title)}" placeholder="Step title" oninput="D.process.steps[${i}].title=this.value">
+        <input type="text" value="${esc(s.desc)}" placeholder="Step description" oninput="D.process.steps[${i}].desc=this.value">
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="delStep(${i})">−</button>
+    </div>`).join('');
+}
+function addStep() {
+  const n = String(D.process.steps.length + 1).padStart(2,'0');
+  D.process.steps.push({num:n, title:'', desc:''});
+  renderProcess();
+}
+function delStep(i) { D.process.steps.splice(i,1); persist(); renderProcess(); }
+function saveProcess() {
+  D.process.subtitle = v('proc-sub');
+  persist(); toast('✓ 流程已儲存','ok');
+}
+
+// ══════════════════════════════════════════════
+//  OTHERS
+// ══════════════════════════════════════════════
+function renderOthers() {
+  const g = document.getElementById('others-grid');
+  if (!D.others.length) { g.innerHTML = '<div class="empty" style="grid-column:1/-1">尚無圖片</div>'; return; }
+  g.innerHTML = D.others.map((o,i) => `
+    <div class="other-item">
+      ${o.src
+        ? `<img class="other-thumb" src="${esc(o.src)}" onerror="this.style.display='none'">`
+        : `<div class="other-no-thumb">NO IMAGE</div>`}
+      <div class="other-body">
+        <div class="fg" style="margin-bottom:6px">
+          <input type="text" value="${esc(o.src)}" placeholder="圖片 URL 或上傳" oninput="D.others[${i}].src=this.value;persist();renderOthers()">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <input type="text" value="${esc(o.alt)}" placeholder="Alt 文字" oninput="D.others[${i}].alt=this.value">
+        </div>
+        <div class="other-actions">
+          <label class="btn btn-sm" style="cursor:pointer;margin:0">
+            上傳圖片
+            <input type="file" accept="image/*" style="display:none" onchange="uploadOther(event,${i})">
+          </label>
+          <button class="btn btn-sm btn-danger" onclick="delOther(${i})">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+function addOther() {
+  D.others.push({id:'o'+Date.now(), src:'', alt:'Other work'});
+  renderOthers();
+}
+function uploadOther(e, i) {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => { D.others[i].src = ev.target.result; persist(); renderOthers(); };
+  r.readAsDataURL(f);
+}
+function delOther(i) {
+  if (!confirm('確定刪除？')) return;
+  D.others.splice(i,1); persist(); renderOthers(); toast('已刪除','ok');
+}
+
+// ══════════════════════════════════════════════
+//  ABOUT
+// ══════════════════════════════════════════════
+function renderAbout() {
+  sv('ab-pos', D.about.positioning);
+  sv('ab-cap', D.about.capabilities);
+}
+function saveAbout() {
+  D.about.positioning = v('ab-pos');
+  D.about.capabilities = v('ab-cap');
+  persist(); toast('✓ About 已儲存','ok');
+}
+
+// ══════════════════════════════════════════════
+//  CONTACT
+// ══════════════════════════════════════════════
+function renderContact() {
+  sv('ct-name', D.contact.name);
+  sv('ct-ig', D.contact.ig);
+  sv('ct-ig-url', D.contact.igUrl);
+  sv('ct-tel', D.contact.tel);
+  sv('ct-email', D.contact.email);
+}
+function saveContact() {
+  D.contact.name  = v('ct-name');
+  D.contact.ig    = v('ct-ig');
+  D.contact.igUrl = v('ct-ig-url');
+  D.contact.tel   = v('ct-tel');
+  D.contact.email = v('ct-email');
+  persist(); toast('✓ Contact 已儲存','ok');
+}
+
+// ══════════════════════════════════════════════
+//  IMPORT / EXPORT / RESET
+// ══════════════════════════════════════════════
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  Object.assign(document.createElement('a'),{href:url,download:'flowstudio-data.json'}).click();
+  URL.revokeObjectURL(url);
+  toast('✓ JSON 已匯出','ok');
+}
+function importJSON(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    try { D = JSON.parse(ev.target.result); persist(); renderDash(); toast('✓ 資料已匯入','ok'); }
+    catch { toast('JSON 格式錯誤','err'); }
+  };
+  r.readAsText(f);
+  e.target.value = '';
+}
+function resetAll() {
+  if (!confirm('確定重置所有資料？此操作無法還原！')) return;
+  D = JSON.parse(JSON.stringify(DEFAULTS));
+  persist(); renderDash(); toast('已重置為預設值','ok');
+}
+
+// ══════════════════════════════════════════════
+//  MODAL HELPERS
+// ══════════════════════════════════════════════
+function open(id)  { document.getElementById(id).classList.add('open'); }
+function close(id) { document.getElementById(id).classList.remove('open'); }
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+let toastT;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function v(id)      { return document.getElementById(id)?.value || ''; }
+function sv(id, val){ const el = document.getElementById(id); if(el) el.value = val||''; }
+
+// ══════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════
+load();
+loadGHSettings();
+renderDash();
+</script>
+</body>
+</html>

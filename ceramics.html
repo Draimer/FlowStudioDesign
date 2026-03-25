@@ -43,6 +43,34 @@
       overflow-x:hidden;
     }
 
+    /* ─── Magnetic Cursor (mirrors index.html) ─────────────── */
+    .cursor-dot{
+      width:6px; height:6px;
+      background:var(--ink);
+      position:fixed; top:0; left:0;
+      pointer-events:none; z-index:9999;
+      border-radius:50%; will-change:transform;
+      transition: width .3s, height .3s, opacity .3s;
+    }
+    .cursor-ring{
+      width:26px; height:26px;
+      border:1px solid rgba(232,232,234,.3);
+      position:fixed; top:0; left:0;
+      pointer-events:none; z-index:9998;
+      border-radius:50%; will-change:transform;
+      transition: width .3s, height .3s, background .3s, border-color .3s;
+    }
+    .cursor-ring.hovered{
+      width:50px; height:50px;
+      background:rgba(232,232,234,.1);
+      border-color:rgba(232,232,234,.8);
+    }
+    .cursor-dot.hovered{ opacity:0; }
+    @media(pointer: fine){
+      body{ cursor:none; }
+      a, button, .toggle, .filter-btn, .ceramic-item{ cursor:none; }
+    }
+
     #bg{
       position:fixed; inset:0; width:100%; height:100%;
       z-index:-2; opacity:.86;
@@ -464,10 +492,55 @@
     .musicToggleBtn:hover{ background:rgba(18,18,24,.75); border-color:rgba(232,232,234,.20); transform:translateY(-1px); }
 
     /* ─── Responsive ─────────────────────── */
-    @media(max-width:920px){ nav{ display:none; } }
+    /* ─── Hamburger ──────────────────────────────────────── */
+    .hamburger{
+      display:none; appearance:none; background:none;
+      border:1px solid rgba(232,232,234,.12); border-radius:8px;
+      width:36px; height:36px;
+      align-items:center; justify-content:center; flex-direction:column;
+      cursor:pointer; flex-shrink:0; padding:0;
+      transition:background .2s, border-color .2s;
+    }
+    .hamburger:hover{ background:rgba(232,232,234,.06); border-color:rgba(232,232,234,.22); }
+    .hamburger span{ display:block; width:16px; height:1.5px; background:var(--ink); border-radius:2px; transition:transform .25s, opacity .2s; }
+    .hamburger span+span{ margin-top:4px; }
+    .hamburger.open span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2){ opacity:0; transform:scaleX(0); }
+    .hamburger.open span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+    .mobile-nav{
+      display:none; position:fixed; inset:50px 0 0 0;
+      background:rgba(5,5,7,.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      z-index:9; flex-direction:column; padding:24px 24px 40px; gap:4px;
+      overflow-y:auto; transform:translateY(-12px); opacity:0;
+      transition:opacity .22s ease, transform .22s ease; pointer-events:none;
+    }
+    .mobile-nav.open{ opacity:1; transform:translateY(0); pointer-events:all; }
+    .mobile-nav a{
+      display:block; padding:14px 16px; font-size:15px; letter-spacing:.08em;
+      color:rgba(232,232,234,.72); border-radius:12px; border:1px solid transparent;
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .mobile-nav a:hover{ background:rgba(232,232,234,.05); border-color:rgba(232,232,234,.10); color:var(--ink); }
+    .mob-divider{ height:1px; background:rgba(232,232,234,.08); margin:8px 0; }
+
+    /* ─── Responsive ─────────────────────────────────────── */
+    @media(max-width:920px){
+      nav{ display:none; }
+      .hamburger{ display:inline-flex; }
+      .mobile-nav{ display:flex; }
+    }
     @media(max-width:560px){
       .wrap{ width:min(var(--max), calc(100% - 28px)); }
       .page-hero{ padding:60px 0 40px; }
+      h1{ font-size:clamp(32px,10vw,62px); }
+      .sub{ font-size:15px; }
+      .filter-bar{ gap:6px; }
+      .ceramics-grid{ columns:1; }
+      footer .wrap > div{ flex-direction:column; align-items:flex-start; gap:14px; }
+      footer span:last-child{ font-size:10px; }
+    }
+    @media(max-width:380px){
+      .brand div:last-child{ display:none; }
     }
 
     /* ─── Reduced motion override ────────── */
@@ -481,6 +554,9 @@
   </style>
 </head>
 <body>
+
+<div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+<div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
 
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
@@ -505,9 +581,23 @@
         <span class="dot on" id="motionDot" aria-hidden="true"></span>
         Motion
       </button>
+      <button class="hamburger" id="hamburger" aria-label="開啟選單" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <a href="index.html#works"   onclick="closeMobileNav()">Works</a>
+  <a href="index.html#process" onclick="closeMobileNav()">Process</a>
+  <a href="index.html#others"  onclick="closeMobileNav()">Others</a>
+  <a href="index.html#about"   onclick="closeMobileNav()">About</a>
+  <a href="index.html#contact" onclick="closeMobileNav()">Contact</a>
+  <div class="mob-divider"></div>
+  <a href="ceramics.html" onclick="closeMobileNav()">Ceramics</a>
+  <a href="pc-builds.html">PC Builds ↗</a>
+</nav>
 
 <main>
   <div class="wrap">
@@ -693,7 +783,8 @@ function start(){ stop(); ctx.fillStyle='rgba(5,5,7,1)'; ctx.fillRect(0,0,w,h); 
 function stop(){ if(raf) cancelAnimationFrame(raf); raf=0; }
 
 // ── Ceramics Data ─────────────────────────────────────────────
-let CERAMICS = [
+// 預設值：admin 尚未設定時的 fallback
+const CERAMICS_DEFAULT = [
   { name: "Porttery 1",            img: "images/pt1_a.png", tags: ["陶藝"], year: "2024", desc: "As a port to flow" },
   { name: "Refined business style",img: "images/pt1_b.png", tags: ["陶藝"], year: "2024", desc: "Bussiness style mug" },
   { name: "Porttery 3",            img: "images/pt2_a.png", tags: ["器皿"], year: "2024", desc: "Study room mug" },
@@ -701,10 +792,48 @@ let CERAMICS = [
   { name: "Porttery 5",            img: "images/pt3_a.png", tags: ["雕塑"], year: "2024", desc: "Teacup" },
   { name: "Minimalist style",      img: "images/pt3_b.png", tags: ["雕塑"], year: "2024", desc: "Exquisite gift set" }
 ];
+
+let CERAMICS      = [];
 let filteredItems = [];
 let activeFilter  = 'all';
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── CMS Data Loader（與 index.html 完全相同的優先順序） ───────
+// 1. fetch ./data.json  →  2. localStorage fs_data  →  3. 內建預設值
+(async function loadCMSData(){
+  let D = null;
+
+  // 1. data.json（GitHub 上的資料，admin 發佈後這裡會更新）
+  try {
+    const res = await fetch('./data.json?t=' + Date.now());
+    if(res.ok) D = await res.json();
+  } catch(e){}
+
+  // 2. localStorage fallback
+  if(!D){
+    const raw = localStorage.getItem('fs_data');
+    if(raw){ try{ D = JSON.parse(raw); }catch(e){} }
+  }
+
+  // 套用頁面文字（如 admin 有設定 ceramicsPage）
+  if(D?.ceramicsPage){
+    const titleEl = document.getElementById('page-title');
+    const subEl   = document.getElementById('page-sub');
+    if(titleEl && D.ceramicsPage.title) titleEl.textContent = D.ceramicsPage.title;
+    if(subEl   && D.ceramicsPage.sub)   subEl.textContent   = D.ceramicsPage.sub;
+  }
+
+  // 3. 決定使用哪份 ceramics 資料
+  if(D?.ceramics && D.ceramics.length){
+    CERAMICS = D.ceramics;
+  } else {
+    CERAMICS = CERAMICS_DEFAULT;
+  }
+
+  buildFilters();
+  renderGrid('all');
+})();
 
 // ── Filter Build ──────────────────────────────────────────────
 function buildFilters() {
@@ -725,17 +854,11 @@ function buildFilters() {
   });
 }
 
-// ── [NEW] Filter 過場：先退場，再渲染並入場 ──────────────────
+// ── Filter 過場：先退場，再渲染並入場 ────────────────────────
 function filterWithTransition(filter) {
-  const grid = document.getElementById('ceramics-grid');
-  const items = grid.querySelectorAll('.ceramic-item');
-
-  // 退場
+  const items = document.querySelectorAll('#ceramics-grid .ceramic-item');
   items.forEach(el => el.classList.add('exiting'));
-
-  setTimeout(() => {
-    renderGrid(filter);
-  }, 500);
+  setTimeout(() => renderGrid(filter), 230);
 }
 
 // ── Render Grid ───────────────────────────────────────────────
@@ -762,28 +885,19 @@ function renderGrid(filter) {
       </div>
     </div>`).join('');
 
-  // click + keyboard
   grid.querySelectorAll('.ceramic-item').forEach(el => {
     el.addEventListener('click', () => openLb(+el.dataset.idx));
     el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') openLb(+el.dataset.idx); });
   });
 
-  // [NEW] Stagger 入場——依 column 計算 delay
+  // Stagger 入場
   requestAnimationFrame(() => {
-    const cols = getComputedStyle(grid).columnCount || 3;
+    const cols = parseInt(getComputedStyle(grid).columnCount) || 3;
     grid.querySelectorAll('.ceramic-item').forEach((el, i) => {
-      const colIdx = i % parseInt(cols);
-      const rowIdx = Math.floor(i / parseInt(cols));
-      // column-first stagger: 每欄 +50ms，每行 +30ms
-      const delay = colIdx * 55 + rowIdx * 28;
+      const delay = (i % cols) * 55 + Math.floor(i / cols) * 28;
       setTimeout(() => el.classList.add('visible'), delay);
     });
   });
-}
-
-function loadData() {
-  buildFilters();
-  renderGrid('all');
 }
 
 // ── [NEW] Lightbox with Touch Swipe ──────────────────────────
@@ -890,8 +1004,44 @@ function onTouchEnd(e) {
   isSwiping = false;
 }
 
-// ── Init ──────────────────────────────────────────────────────
-loadData();
+// ── Hamburger menu ────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mobileNav = document.getElementById('mobile-nav');
+let menuOpen = false;
+function openMobileNav(){ menuOpen=true; hamburger.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); mobileNav.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeMobileNav(){ menuOpen=false; hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); mobileNav.classList.remove('open'); document.body.style.overflow=''; }
+hamburger.addEventListener('click', ()=> menuOpen ? closeMobileNav() : openMobileNav());
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && menuOpen) closeMobileNav(); });
+
+// ── Magnetic Cursor (mirrors index.html) ──────────────────────
+if(window.matchMedia('(pointer: fine)').matches){
+  const dot  = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mouseX=-100, mouseY=-100, dotX=-100, dotY=-100, ringX=-100, ringY=-100;
+  const dotSpeed=0.45, ringSpeed=0.15;
+
+  window.addEventListener('mousemove', e=>{
+    mouseX=e.clientX; mouseY=e.clientY;
+  }, {passive:true});
+
+  (function animateCursor(){
+    dotX  += (mouseX-dotX)  * dotSpeed;
+    dotY  += (mouseY-dotY)  * dotSpeed;
+    ringX += (mouseX-ringX) * ringSpeed;
+    ringY += (mouseY-ringY) * ringSpeed;
+    dot.style.transform  = `translate3d(${dotX}px,${dotY}px,0) translate(-50%,-50%)`;
+    ring.style.transform = `translate3d(${ringX}px,${ringY}px,0) translate(-50%,-50%)`;
+    requestAnimationFrame(animateCursor);
+  })();
+
+  const hoverSel = 'a, button, .toggle, .filter-btn, .ceramic-item, .lb-nav, .lb-close';
+  document.addEventListener('mouseover', e=>{
+    if(e.target.closest(hoverSel)){ ring.classList.add('hovered'); dot.classList.add('hovered'); }
+  });
+  document.addEventListener('mouseout', e=>{
+    if(e.target.closest(hoverSel)){ ring.classList.remove('hovered'); dot.classList.remove('hovered'); }
+  });
+}
 </script>
 </body>
 </html>

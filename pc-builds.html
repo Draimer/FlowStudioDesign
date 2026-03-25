@@ -554,20 +554,65 @@
     }
     .musicToggleBtn:hover{ background:rgba(18,18,24,.75); border-color:rgba(232,232,234,.20); transform:translateY(-1px); }
 
-    /* ─── Responsive ─────────────────────────────────────────── */
+    /* ─── Hamburger ──────────────────────────────────────── */
+    .hamburger{
+      display:none; appearance:none; background:none;
+      border:1px solid rgba(232,232,234,.12); border-radius:8px;
+      width:36px; height:36px;
+      align-items:center; justify-content:center; flex-direction:column;
+      cursor:pointer; flex-shrink:0; padding:0;
+      transition:background .2s, border-color .2s;
+    }
+    .hamburger:hover{ background:rgba(232,232,234,.06); border-color:rgba(232,232,234,.22); }
+    .hamburger span{ display:block; width:16px; height:1.5px; background:var(--ink); border-radius:2px; transition:transform .25s, opacity .2s; }
+    .hamburger span+span{ margin-top:4px; }
+    .hamburger.open span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2){ opacity:0; transform:scaleX(0); }
+    .hamburger.open span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+    .mobile-nav{
+      display:none; position:fixed; inset:50px 0 0 0;
+      background:rgba(5,5,7,.97); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      z-index:9; flex-direction:column; padding:24px 24px 40px; gap:4px;
+      overflow-y:auto; transform:translateY(-12px); opacity:0;
+      transition:opacity .22s ease, transform .22s ease; pointer-events:none;
+    }
+    .mobile-nav.open{ opacity:1; transform:translateY(0); pointer-events:all; }
+    .mobile-nav a{
+      display:block; padding:14px 16px; font-size:15px; letter-spacing:.08em;
+      color:rgba(232,232,234,.72); border-radius:12px; border:1px solid transparent;
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .mobile-nav a:hover{ background:rgba(232,232,234,.05); border-color:rgba(232,232,234,.10); color:var(--ink); }
+    .mob-divider{ height:1px; background:rgba(232,232,234,.08); margin:8px 0; }
+
+    /* ─── Responsive ─────────────────────────────────────── */
     @media(max-width:960px){
       .pc-card{ grid-column:span 6; }
       .pc-card.wide{ grid-column:span 12; }
       .pc-card.med{ grid-column:span 6; }
       .service-strip{ grid-template-columns:1fr; }
     }
-    @media(max-width:920px){ nav{ display:none; } }
+    @media(max-width:920px){
+      nav{ display:none; }
+      .hamburger{ display:inline-flex; }
+      .mobile-nav{ display:flex; }
+    }
     @media(max-width:640px){
       .wrap{ width:min(var(--max), calc(100% - 28px)); }
       .page-hero{ padding:60px 0 40px; }
       .pc-card, .pc-card.wide, .pc-card.med{ grid-column:span 12; }
       .pc-card.wide .img-wrap{ aspect-ratio:4/3; }
-      .cta-btn{ padding:16px 28px; font-size:13px; }
+      h1{ font-size:clamp(32px,10vw,62px); }
+      .sub{ font-size:15px; }
+      .cta-btn{ padding:16px 24px; font-size:13px; letter-spacing:.10em; }
+      .cta-heading{ font-size:clamp(24px,7vw,48px); }
+      .cta-alts{ gap:8px; }
+      footer .wrap > div{ flex-direction:column; align-items:flex-start; gap:14px; }
+      footer span:last-child{ font-size:10px; }
+    }
+    @media(max-width:380px){
+      .brand div:last-child{ display:none; }
+      .cta-btn{ width:100%; }
     }
 
     @media(prefers-reduced-motion:reduce){
@@ -605,9 +650,22 @@
         <span class="dot on" id="motionDot" aria-hidden="true"></span>
         Motion
       </button>
+      <button class="hamburger" id="hamburger" aria-label="開啟選單" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </header>
+
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <a href="index.html#works"   onclick="closeMobileNav()">Works</a>
+  <a href="index.html#process" onclick="closeMobileNav()">Process</a>
+  <a href="index.html#about"   onclick="closeMobileNav()">About</a>
+  <a href="index.html#contact" onclick="closeMobileNav()">Contact</a>
+  <div class="mob-divider"></div>
+  <a href="ceramics.html">Ceramics</a>
+  <a href="pc-builds.html" onclick="closeMobileNav()">PC Builds ↗</a>
+</nav>
 
 <main>
   <div class="wrap">
@@ -687,7 +745,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           @kindredaimer
         </a>
-        <a class="alt-link" href="mailto:draimer@flowstudio.design">
+        <a class="alt-link" href="/cdn-cgi/l/email-protection#cbafb9aaa2a6aeb98bada7a4bcb8bfbeafa2a4e5afaeb8a2aca5">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
           Email
         </a>
@@ -740,7 +798,7 @@
         >
       </div>
 
-      <div class="contact-line-id">Line ID：<span id="contact-line-id">@7792687</span></div>
+      <div class="contact-line-id">Line ID：<span id="contact-line-id">@your_line_id</span></div>
       <div class="contact-hint">掃描 QR Code 或搜尋 ID 加入好友</div>
 
     </div>
@@ -779,7 +837,7 @@
   </button>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── Year ──────────────────────────────────────────────────────
 document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -910,7 +968,7 @@ function lbKey(e){ if(e.key==='Escape') closeLb(); }
   在下方 PC_BUILDS 陣列裡，每個物件代表一台電腦。
   欄位說明：
     id       : 唯一識別碼（隨便取）
-    name     : 這台電腦的名字（例如 "電競旗艦 RTX R090"）
+    name     : 這台電腦的名字（例如 "電競旗艦 RTX 4090"）
     img      : 圖片路徑（例如 "images/pc1.jpg"），放在 images 資料夾
     tags     : 分類標籤陣列，用於 Filter（例如 ["電競", "高階"]）
     year     : 完成年份
@@ -926,28 +984,28 @@ const PC_BUILDS = [
     name: '電競旗艦 Build',
     img: 'images/pc1.jpg',          // ← 換成你的圖片
     tags: ['電競', '高階'],
-    year: '2026',
-    budget: 'NT$ 265000+',
+    year: '2024',
+    budget: 'NT$ 80,000+',
     wide: true,
     specs: [
-      { icon: 'cpu',  text: 'Ryzen 9 9950X3D' },
-      { icon: 'gpu',  text: 'RTX 5090 32G LIGHTNING Z' },
-      { icon: 'ram',  text: '64GB DDR5 5600' },
+      { icon: 'cpu',  text: 'Intel Core i9-14900K' },
+      { icon: 'gpu',  text: 'RTX 4090 24G' },
+      { icon: 'ram',  text: '64GB DDR5 6000' },
       { icon: 'ssd',  text: '2TB PCIe 5.0 NVMe' },
     ]
   },
   {
     id: 'pc2',
-    name: '高階電競 Build',
+    name: '中階電競 Build',
     img: 'images/pc2.jpg',          // ← 換成你的圖片
-    tags: ['電競', '高階'],
+    tags: ['電競', '中階'],
     year: '2024',
-    budget: 'NT$ 75000',
+    budget: 'NT$ 40,000',
     specs: [
-      { icon: 'cpu',  text: 'R9 9850X3D' },
-      { icon: 'gpu',  text: 'RTX 5070Ti' },
+      { icon: 'cpu',  text: 'Intel Core i5-14600K' },
+      { icon: 'gpu',  text: 'RTX 4070 Super' },
       { icon: 'ram',  text: '32GB DDR5 5600' },
-      { icon: 'ssd',  text: '2TB PCIe 4.0 NVMe' },
+      { icon: 'ssd',  text: '1TB PCIe 4.0 NVMe' },
     ]
   },
   {
@@ -1094,6 +1152,15 @@ function renderGrid(filter){
 buildFilters();
 renderGrid('all');
 
+// ── Hamburger menu ────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mobileNav = document.getElementById('mobile-nav');
+let menuOpen = false;
+function openMobileNav(){ menuOpen=true; hamburger.classList.add('open'); hamburger.setAttribute('aria-expanded','true'); mobileNav.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeMobileNav(){ menuOpen=false; hamburger.classList.remove('open'); hamburger.setAttribute('aria-expanded','false'); mobileNav.classList.remove('open'); document.body.style.overflow=''; }
+hamburger.addEventListener('click', ()=> menuOpen ? closeMobileNav() : openMobileNav());
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && menuOpen) closeMobileNav(); });
+
 // ── Magnetic Cursor ───────────────────────────────────────────
 if(window.matchMedia('(pointer: fine)').matches){
   const dot  = document.getElementById('cursor-dot');
@@ -1112,8 +1179,4 @@ if(window.matchMedia('(pointer: fine)').matches){
   })();
   const hoverSel = 'a, button, .toggle, .filter-btn, .pc-card, .cta-btn, .alt-link';
   document.addEventListener('mouseover', e=>{ if(e.target.closest(hoverSel)){ ring.classList.add('hovered'); dot.classList.add('hovered'); } });
-  document.addEventListener('mouseout',  e=>{ if(e.target.closest(hoverSel)){ ring.classList.remove('hovered'); dot.classList.remove('hovered'); } });
-}
-</script>
-</body>
-</html>
+  document.addEventList
