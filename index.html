@@ -35,8 +35,9 @@
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html{ height:100%; }
     body{
+      min-height:100%;
       margin:0;
       color:var(--ink);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
@@ -57,7 +58,7 @@
     /* soft vignette */
     .vignette{
       position:fixed;
-      inset:-20%;
+      inset:0;
       z-index:-1;
       pointer-events:none;
       background:
@@ -176,7 +177,7 @@
       font-weight:520;
       letter-spacing:-.02em;
       line-height:1.06;
-      font-size: clamp(44px, 5.2vw, 74px);
+      font-size: clamp(32px, 5.2vw, 74px);
     }
     .sub{
       margin:0;
@@ -291,7 +292,7 @@
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       gap:14px;
     }
 
@@ -372,7 +373,7 @@
     /* Products Grid */
     .productsGrid{
       display:grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       gap:14px;
     }
     .productHero{
@@ -397,7 +398,7 @@
       display:block;
       opacity:.96;
       filter: saturate(.9) contrast(1.02);
-      transition: opacity 0.3s ease, transform 0.4s ease;
+      transition: opacity 0.3s ease;
     }
     .productHero .cap{
       position:absolute;
@@ -510,11 +511,13 @@
       object-fit: cover;
       display: block;
       opacity: 0.9;
-      transition: opacity 0.4s ease, transform 0.4s ease;
+      transition: opacity 0.4s ease, transform 0.5s ease;
     }
-    .otherCard:hover img {
+    @media(hover:hover){
+      .otherCard:hover img {
         opacity: 1;
-        transform: scale(1.25);
+        transform: scale(1.06);
+      }
     }
 
     /* About + Contact */
@@ -673,7 +676,123 @@
       display:none;
     }
 
-    /* --- [新增] 磁性游標樣式 --- */
+    /* ── Hamburger button ─────────────────────────────────── */
+    .hamburger{
+      display:none;
+      appearance:none; background:none;
+      border:1px solid rgba(232,232,234,.12);
+      border-radius:8px;
+      width:36px; height:36px;
+      align-items:center; justify-content:center;
+      flex-direction:column; gap:0;
+      cursor:pointer; flex-shrink:0;
+      transition:background .2s, border-color .2s;
+      padding:0;
+    }
+    .hamburger:hover{ background:rgba(232,232,234,.06); border-color:rgba(232,232,234,.22); }
+    .hamburger span{
+      display:block; width:16px; height:1.5px;
+      background:var(--ink); border-radius:2px;
+      transition:transform .25s ease, opacity .2s ease;
+    }
+    .hamburger span+span{ margin-top:4px; }
+    .hamburger.open span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+    .hamburger.open span:nth-child(2){ opacity:0; transform:scaleX(0); }
+    .hamburger.open span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+
+    /* ── Mobile nav drawer ────────────────────────────────── */
+    .mobile-nav{
+      display:none;
+      position:fixed; inset:50px 0 0 0;
+      background:rgba(5,5,7,.97);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      z-index:9;
+      flex-direction:column;
+      padding:24px 24px 40px;
+      gap:4px;
+      overflow-y:auto;
+      transform:translateY(-12px);
+      opacity:0;
+      transition:opacity .22s ease, transform .22s ease;
+      pointer-events:none;
+    }
+    .mobile-nav.open{ opacity:1; transform:translateY(0); pointer-events:all; }
+    .mobile-nav a{
+      display:block; padding:14px 16px;
+      font-size:15px; letter-spacing:.08em;
+      color:rgba(232,232,234,.72);
+      border-radius:12px; border:1px solid transparent;
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .mobile-nav a:hover{ background:rgba(232,232,234,.05); border-color:rgba(232,232,234,.10); color:var(--ink); }
+    .mob-divider{ height:1px; background:rgba(232,232,234,.08); margin:8px 0; }
+
+    /* ── Responsive breakpoints ───────────────────────────── */
+
+    @media(max-width:920px){
+      nav{ display:none; }
+      .hamburger{ display:inline-flex; }
+      .mobile-nav{ display:flex; }
+    }
+
+    @media(max-width:860px){
+      .heroGrid{ grid-template-columns:1fr; align-items:start; }
+      .card{ grid-column:span 6; }
+      .step{ grid-column:span 6; }
+      .twoCol{ grid-template-columns:1fr; }
+      .pm{ grid-column:span 12; }
+      .productHero{ grid-column:span 12; }
+      .processVisuals{ grid-template-columns:1fr; }
+      .otherCard{ grid-column:span 6; }
+      .sectionTitle{ flex-direction:column; align-items:flex-start; gap:6px; }
+    }
+
+    @media(max-width:560px){
+      .wrap{ width:min(var(--max), calc(100% - 28px)); }
+      section{ padding:40px 0; }
+
+      .hero{ padding:56px 0 36px; }
+      h1{ font-size:clamp(28px, 8.5vw, 44px); letter-spacing:-.01em; line-height:1.1; }
+      .sub{ font-size:14px; line-height:1.65; }
+      .kicker{ font-size:11px; }
+      .heroCard{ padding:14px 14px 12px; margin-top:4px; }
+      .heroCard .row{ font-size:12px; }
+      .ctaRow{ flex-direction:column; gap:8px; }
+      .ctaRow .btn{ width:100%; justify-content:center; }
+
+      .card{ grid-column:span 12; }
+      .step{ grid-column:span 12; }
+      .otherCard{ grid-column:span 12; }
+      .grid{ gap:10px; }
+      .productsGrid{ gap:10px; }
+
+      .productHero{ grid-column:span 12; }
+      .productHero .imgWrap{ aspect-ratio:4/3; }
+      .productHero h4{ font-size:14px; }
+      .productMeta{ padding:12px 14px 14px; }
+
+      .processVisuals{ grid-template-columns:1fr; gap:10px; }
+
+      .sectionTitle{ flex-direction:column; align-items:flex-start; gap:6px; }
+      .sectionTitle p{ max-width:100%; font-size:12px; }
+
+      .panel{ padding:16px 14px; }
+      .panel p{ font-size:13px; }
+      .contactLine{ gap:8px; }
+      .linkPill{ font-size:11px; padding:8px 10px; }
+
+      footer{ padding:28px 0 40px; }
+      footer .wrap > div{ flex-direction:column; align-items:flex-start; gap:12px; }
+      footer span:last-child{ font-size:10px; line-height:1.6; }
+    }
+
+    @media(max-width:380px){
+      .brand div:last-child{ display:none; }
+      h1{ font-size:clamp(24px, 8vw, 32px); }
+      .nav{ padding:12px 0; }
+    }
+
+    
  /* --- [修正版] 磁性游標樣式 --- */
 .cursor-dot {
   width: 6px;
@@ -750,9 +869,24 @@
           <span class="dot on" id="motionDot" aria-hidden="true"></span>
           Motion
         </button>
+        <button class="hamburger" id="hamburger" aria-label="開啟選單" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </div>
   </header>
+
+  <!-- Mobile Nav Drawer -->
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+    <a href="#works"        onclick="closeMobileNav()">Works</a>
+    <a href="#process"      onclick="closeMobileNav()">Process</a>
+    <a href="#others"       onclick="closeMobileNav()">Others</a>
+    <a href="#about"        onclick="closeMobileNav()">About</a>
+    <a href="#contact"      onclick="closeMobileNav()">Contact</a>
+    <div class="mob-divider"></div>
+    <a href="ceramics.html">Ceramics ↗</a>
+    <a href="pc-builds.html">PC Builds ↗</a>
+  </nav>
 
   <main>
     <div class="wrap hero" id="top">
@@ -1013,26 +1147,20 @@
   </div>
 
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    // Detail Button Logic — with fade transition (mirrors ceramics filter animation)
+    // Detail Button Logic
     document.querySelectorAll('.toggle-detail').forEach(btn => {
       btn.addEventListener('click', function(e) {
         const card = e.target.closest('.productHero');
-        const img  = card.querySelector('.p-img');
+        const img = card.querySelector('.p-img');
         const currentSrc = img.getAttribute('src');
-        const nextSrc = currentSrc.includes('_a.png')
-          ? currentSrc.replace('_a.png', '_b.png')
-          : currentSrc.replace('_b.png', '_a.png');
-        const nextLabel = currentSrc.includes('_a.png') ? 'Back' : 'View Detail';
 
-        // 淡出 → 換圖 → 淡入（與 ceramics lightbox 切換邏輯一致）
-        img.style.opacity = '0';
-        img.style.transform = 'scale(0.97)';
-        setTimeout(() => {
-          img.src = nextSrc;
-          img.style.opacity = '';
-          img.style.transform = '';
-          e.target.textContent = nextLabel;
-        }, 220);
+        if(currentSrc.includes('_a.png')) {
+          img.src = currentSrc.replace('_a.png', '_b.png');
+          e.target.textContent = 'Back';
+        } else {
+          img.src = currentSrc.replace('_b.png', '_a.png');
+          e.target.textContent = 'View Detail';
+        }
       });
     });
 
@@ -1295,6 +1423,26 @@
       }
     });
   } // 這裡結束 if 判斷
+    // ── Hamburger menu ─────────────────────────────────────────
+    const hamburger  = document.getElementById('hamburger');
+    const mobileNav  = document.getElementById('mobile-nav');
+    let menuOpen = false;
+
+    function openMobileNav(){
+      menuOpen = true;
+      hamburger.classList.add('open');
+      hamburger.setAttribute('aria-expanded','true');
+      mobileNav.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMobileNav(){
+      menuOpen = false;
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded','false');
+      mobileNav.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    hamburger.addEventListener('click', ()=> menuOpen ? closeMobileNav() : openMobileNav());
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && menuOpen) closeMobileNav(); });
+
   </script>
-</body>
-</html>
