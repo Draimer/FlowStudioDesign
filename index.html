@@ -317,9 +317,15 @@
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
       position:relative;
       overflow:hidden;
-      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+      /* 進場：同樣捲到才浮出 */
+      opacity:0; transform:translateY(20px) scale(.98);
+      transition:
+        opacity .45s cubic-bezier(.22,.68,0,1.2),
+        transform .45s cubic-bezier(.22,.68,0,1.2),
+        border-color .22s ease, background .22s ease;
     }
-    .card:hover{
+    .card.visible{ opacity:1; transform:translateY(0) scale(1); }
+    .card.visible:hover{
       transform: translateY(-2px);
       border-color: rgba(232,232,234,.18);
       background: linear-gradient(180deg, rgba(18,18,24,.62), rgba(18,18,24,.26));
@@ -396,7 +402,15 @@
       box-shadow: var(--shadow);
       overflow:hidden;
       position:relative;
+      /* 進場：先藏著，捲到這裡才一張一張浮出來 */
+      opacity:0; transform:translateY(20px) scale(.98);
+      transition:
+        opacity .45s cubic-bezier(.22,.68,0,1.2),
+        transform .45s cubic-bezier(.22,.68,0,1.2),
+        border-color .22s ease;
     }
+    .productHero.visible{ opacity:1; transform:translateY(0) scale(1); }
+    .productHero:hover{ border-color:rgba(232,232,234,.22); }
     .productHero .imgWrap{
       position:relative;
       width:100%;
@@ -410,13 +424,35 @@
       display:block;
       opacity:.96;
       filter: saturate(.9) contrast(1.02);
-      transition: opacity 0.3s ease;
+      transition: transform .6s cubic-bezier(.22,.68,0,1.2), filter .4s ease, opacity .3s ease;
+    }
+    .productHero:hover img{
+      transform: scale(1.05);
+      filter: saturate(.96) contrast(1.06);
+      opacity:1;
     }
     .productHero .cap{
       position:absolute;
       inset:auto 0 0 0;
-      padding:18px 18px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.9), rgba(0,0,0,0));
+      padding:56px 18px 16px;
+      background: linear-gradient(to top, rgba(5,5,7,.94) 0%, rgba(5,5,7,.70) 45%, rgba(5,5,7,0) 100%);
+      /* 平常只露出標題，滑鼠移上去整塊滑上來 */
+      transform: translateY(calc(100% - 48px));
+      transition: transform .4s cubic-bezier(.22,.68,0,1.2);
+    }
+    .productHero:hover .cap{ transform: translateY(0); }
+    .productHero .cap p,
+    .productHero .cap .toggle-detail{
+      opacity:0; transform:translateY(5px);
+      transition: opacity .3s ease .06s, transform .3s ease .06s;
+    }
+    .productHero:hover .cap p,
+    .productHero:hover .cap .toggle-detail{ opacity:1; transform:translateY(0); }
+    /* 手機、平板沒有滑鼠可以 hover，就整塊直接展開 */
+    @media(hover:none){
+      .productHero .cap{ transform:none; padding:18px 18px 16px; }
+      .productHero .cap p,
+      .productHero .cap .toggle-detail{ opacity:1; transform:none; }
     }
     .productHero h4{
       margin:0 0 4px;
@@ -805,51 +841,6 @@
     }
 
     
- /* --- [修正版] 磁性游標樣式 --- */
-.cursor-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--ink);
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 9999;
-  border-radius: 50%;
-  will-change: transform;
-  transition: width 0.3s, height 0.3s, opacity 0.3s;
-}
-
-.cursor-ring {
-  width: 26px;
-  height: 26px;
-  border: 1px solid rgba(232,232,234, 0.3);
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 9998;
-  border-radius: 50%;
-  will-change: transform;
-  transition: width 0.3s, height 0.3s, background 0.3s, border-color 0.3s;
-}
-
-/* 懸浮放大狀態 */
-.cursor-ring.hovered {
-  width: 50px;
-  height: 50px;
-  background: rgba(232,232,234, 0.1);
-  border-color: rgba(232,232,234, 0.8);
-}
-
-.cursor-dot.hovered {
-  opacity: 0; /* 放大時隱藏中心點，或是縮小 */
-}
-
-/* 記得隱藏原生鼠標 */
-@media (pointer: fine) {
-  body { cursor: none; }
-  a, button, .toggle { cursor: none; }
-}
-
 /* ── 安裝成 App 後的全螢幕修正 ──────────────────────────
    瀏海、圓角、底部 home indicator 的安全範圍。
    在一般瀏覽器裡 env() 會是 0，所以不影響原本的樣子。 */
@@ -867,22 +858,22 @@ header{
   right:  calc(18px + env(safe-area-inset-right));
   bottom: calc(18px + env(safe-area-inset-bottom));
 }
+/* 系統設定「減少動態效果」時的安全網：內容一律直接顯示，不會卡在透明 */
+@media (prefers-reduced-motion: reduce){
+  .productHero, .card{ opacity:1; transform:none; transition:none; }
+  .productHero .cap{ transform:none; padding:18px 18px 16px; }
+  .productHero .cap p, .productHero .cap .toggle-detail{ opacity:1; transform:none; }
+}
+
 @media (display-mode: standalone){
   /* 已經是 App 了，整頁下拉回彈跟長按選單會很出戲 */
   body{ overscroll-behavior-y: none; }
   a, button, .toggle, .hamburger{ -webkit-touch-callout: none; }
 }
-@media (display-mode: standalone) and (pointer: coarse){
-  /* 手機沒有游標可藏，桌機版 App 則保留原本的磁性游標 */
-  body, a, button, .toggle{ cursor: auto; }
-}
   </style>
 </head>
 
 <body>
-  <div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
-  <div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
-
   <canvas id="bg" aria-hidden="true"></canvas>
   <div class="vignette" aria-hidden="true"></div>
 
@@ -1219,8 +1210,7 @@ header{
     document.getElementById('year').textContent = new Date().getFullYear();
 
     // Motion preference + toggle
-    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let motionEnabled = !prefersReduced;
+    let motionEnabled = true;   // 預設就打開動態效果
 
     const motionToggle = document.getElementById('motionToggle');
     const motionDot = document.getElementById('motionDot');
@@ -1241,6 +1231,29 @@ header{
       syncMotionUI();
       if(motionEnabled) start(); else stop();
     });
+
+    // Works 區塊：捲到畫面裡就一張一張浮出來
+    const revealTargets = document.querySelectorAll('#works .productHero, #works .card');
+
+    function showAll(){ revealTargets.forEach(el => el.classList.add('visible')); }
+
+    if(!('IntersectionObserver' in window)){
+      showAll();
+    } else {
+      const revealObserver = new IntersectionObserver((entries, obs)=>{
+        // 同一批進畫面的，依序錯開 80ms
+        const batch = entries.filter(en => en.isIntersecting);
+        batch.forEach((en, i)=>{
+          setTimeout(()=> en.target.classList.add('visible'), motionEnabled ? i * 80 : 0);
+          obs.unobserve(en.target);
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+      revealTargets.forEach(el => revealObserver.observe(el));
+    }
+
+    // 動態效果關掉時，全部直接顯示，不要卡在透明狀態
+    motionToggle.addEventListener('click', ()=>{ if(!motionEnabled) showAll(); });
 
     // Music Player
     const bgm          = document.getElementById('bgm');
@@ -1416,52 +1429,6 @@ header{
       raf = 0;
     }
 
- // --- [優化版] 磁性游標 (Magnetic Cursor) 邏輯 ---
-  if (window.matchMedia("(pointer: fine)").matches) {
-    const dot = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-
-    let mouseX = -100, mouseY = -100; // 初始位置在螢幕外
-    let dotX = -100, dotY = -100;
-    let ringX = -100, ringY = -100;
-    
-    const dotSpeed = 0.45; 
-    const ringSpeed = 0.15; 
-
-    window.addEventListener('mousemove', (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-    }, { passive: true });
-
-    function animateCursor() {
-      dotX += (mouseX - dotX) * dotSpeed;
-      dotY += (mouseY - dotY) * dotSpeed;
-      ringX += (mouseX - ringX) * ringSpeed;
-      ringY += (mouseY - ringY) * ringSpeed;
-
-      dot.style.transform = `translate3d(${dotX}px, ${dotY}px, 0) translate(-50%, -50%)`;
-      ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-      
-      requestAnimationFrame(animateCursor);
-    }
-    requestAnimationFrame(animateCursor);
-
-    document.addEventListener('mouseover', (e) => {
-      const target = e.target.closest('a, button, .toggle, .btn, .card, .productHero, .otherCard, .panel, .linkPill');
-      if (target) {
-        ring.classList.add('hovered');
-        dot.classList.add('hovered');
-      }
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      const target = e.target.closest('a, button, .toggle, .btn, .card, .productHero, .otherCard, .panel, .linkPill');
-      if (target) {
-        ring.classList.remove('hovered');
-        dot.classList.remove('hovered');
-      }
-    });
-  } // 這裡結束 if 判斷
     // ── Hamburger menu ─────────────────────────────────────────
     const hamburger  = document.getElementById('hamburger');
     const mobileNav  = document.getElementById('mobile-nav');
