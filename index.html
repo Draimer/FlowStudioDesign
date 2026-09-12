@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
   <title>Flow Studio</title>
   
@@ -15,7 +15,19 @@
   </script>
   
   <link rel="icon" type="image/png" href="images/favicon.png">
-  <link rel="apple-touch-icon" href="images/favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+
+  <!-- ── 安裝到主畫面（PWA）────────────────────────────── -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#050507">
+
+  <!-- iOS：全螢幕、無網址列、主畫面名稱 -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Flow Studio">
+  <meta name="application-name" content="Flow Studio">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
   <style>
     :root{
@@ -837,6 +849,33 @@
   body { cursor: none; }
   a, button, .toggle { cursor: none; }
 }
+
+/* ── 安裝成 App 後的全螢幕修正 ──────────────────────────
+   瀏海、圓角、底部 home indicator 的安全範圍。
+   在一般瀏覽器裡 env() 會是 0，所以不影響原本的樣子。 */
+html, body{
+  /* body 用的是 gradient，沒有實色背景。iOS 全螢幕時上下會露白，補上實色。 */
+  background-color: var(--bg0);
+}
+header{
+  padding-top: env(safe-area-inset-top);
+}
+.mobile-nav{
+  inset: calc(50px + env(safe-area-inset-top)) 0 0 0;
+}
+.musicPlayer{
+  right:  calc(18px + env(safe-area-inset-right));
+  bottom: calc(18px + env(safe-area-inset-bottom));
+}
+@media (display-mode: standalone){
+  /* 已經是 App 了，整頁下拉回彈跟長按選單會很出戲 */
+  body{ overscroll-behavior-y: none; }
+  a, button, .toggle, .hamburger{ -webkit-touch-callout: none; }
+}
+@media (display-mode: standalone) and (pointer: coarse){
+  /* 手機沒有游標可藏，桌機版 App 則保留原本的磁性游標 */
+  body, a, button, .toggle{ cursor: auto; }
+}
   </style>
 </head>
 
@@ -1446,3 +1485,22 @@
     document.addEventListener('keydown', e=>{ if(e.key==='Escape' && menuOpen) closeMobileNav(); });
 
   </script>
+  <!-- ── Service Worker：離線可用 + Android/桌機 可安裝 ────── -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { scope: './' })
+          .catch(err => console.warn('SW 註冊失敗：', err));
+      });
+
+      // 有新版本接手時重新載入一次，避免使用者看到舊畫面
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+    }
+  </script>
+</body>
+</html>
