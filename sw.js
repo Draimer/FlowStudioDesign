@@ -1,7 +1,7 @@
 /* Flow Studio — Service Worker
  * 改了網站內容後，把下面的 VERSION 數字 +1，使用者下次開啟就會自動更新。
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `flowstudio-${VERSION}`;
 
 /* 安裝時先抓下來的核心檔案。缺檔不會導致安裝失敗。 */

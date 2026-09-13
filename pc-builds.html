@@ -43,29 +43,6 @@
       overflow-x:hidden;
     }
 
-    /* ─── Magnetic Cursor ────────────────────────────────────── */
-    .cursor-dot{
-      width:6px; height:6px; background:var(--ink);
-      position:fixed; top:0; left:0;
-      pointer-events:none; z-index:9999;
-      border-radius:50%; will-change:transform;
-      transition: width .3s, height .3s, opacity .3s;
-    }
-    .cursor-ring{
-      width:26px; height:26px;
-      border:1px solid rgba(232,232,234,.3);
-      position:fixed; top:0; left:0;
-      pointer-events:none; z-index:9998;
-      border-radius:50%; will-change:transform;
-      transition: width .3s, height .3s, background .3s, border-color .3s;
-    }
-    .cursor-ring.hovered{ width:50px; height:50px; background:rgba(232,232,234,.1); border-color:rgba(232,232,234,.8); }
-    .cursor-dot.hovered{ opacity:0; }
-    @media(pointer:fine){
-      body{ cursor:none; }
-      a, button, .toggle, .pc-card, .filter-btn{ cursor:none; }
-    }
-
     /* ─── Canvas + Vignette ──────────────────────────────────── */
     #bg{
       position:fixed; inset:0; width:100%; height:100%;
@@ -581,8 +558,6 @@
 </head>
 <body>
 
-<div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
-<div class="cursor-ring" id="cursor-ring" aria-hidden="true"></div>
 
 <canvas id="bg" aria-hidden="true"></canvas>
 <div class="vignette" aria-hidden="true"></div>
@@ -784,8 +759,7 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 // ── Motion Toggle ─────────────────────────────────────────────
-const prefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-let motionEnabled = !prefersReduced;
+let motionEnabled = true;   // 預設就打開動態效果
 const motionToggle = document.getElementById('motionToggle');
 const motionDot    = document.getElementById('motionDot');
 function syncMotionUI(){
@@ -1094,26 +1068,6 @@ function renderGrid(filter){
 buildFilters();
 renderGrid('all');
 
-// ── Magnetic Cursor ───────────────────────────────────────────
-if(window.matchMedia('(pointer: fine)').matches){
-  const dot  = document.getElementById('cursor-dot');
-  const ring = document.getElementById('cursor-ring');
-  let mouseX=-100, mouseY=-100, dotX=-100, dotY=-100, ringX=-100, ringY=-100;
-  const dotSpeed=0.45, ringSpeed=0.15;
-  window.addEventListener('mousemove', e=>{ mouseX=e.clientX; mouseY=e.clientY; }, {passive:true});
-  (function animateCursor(){
-    dotX  += (mouseX-dotX)  * dotSpeed;
-    dotY  += (mouseY-dotY)  * dotSpeed;
-    ringX += (mouseX-ringX) * ringSpeed;
-    ringY += (mouseY-ringY) * ringSpeed;
-    dot.style.transform  = `translate3d(${dotX}px,${dotY}px,0) translate(-50%,-50%)`;
-    ring.style.transform = `translate3d(${ringX}px,${ringY}px,0) translate(-50%,-50%)`;
-    requestAnimationFrame(animateCursor);
-  })();
-  const hoverSel = 'a, button, .toggle, .filter-btn, .pc-card, .cta-btn, .alt-link';
-  document.addEventListener('mouseover', e=>{ if(e.target.closest(hoverSel)){ ring.classList.add('hovered'); dot.classList.add('hovered'); } });
-  document.addEventListener('mouseout',  e=>{ if(e.target.closest(hoverSel)){ ring.classList.remove('hovered'); dot.classList.remove('hovered'); } });
-}
 </script>
 </body>
 </html>
