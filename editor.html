@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Flow Studio — 視覺化編輯器</title>
+<style>
+  :root{
+    --bg0:#050507; --bg1:#0c0c10; --bg2:#14141c; --ink:#E8E8EA;
+    --muted:rgba(232,232,234,.62); --line:rgba(232,232,234,.12);
+    --accent:#59b6ff; --ok:#4ade80; --danger:#f87171; --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans TC',sans-serif;
+    background:var(--bg0); color:var(--ink); display:flex; flex-direction:column; overflow:hidden; font-size:14px;
+  }
+  /* topbar */
+  .top{
+    height:54px; flex-shrink:0; display:flex; align-items:center; gap:14px;
+    padding:0 16px; background:var(--bg1); border-bottom:1px solid var(--line); z-index:5;
+  }
+  .brand{display:flex; align-items:center; gap:9px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; font-size:12px;}
+  .mark{width:18px;height:18px;border-radius:999px;background:
+    radial-gradient(circle at 55% 40%, rgba(255,255,255,.2) 0%, transparent 42%),
+    radial-gradient(circle at 50% 50%, #000 0%, #000 52%, rgba(255,255,255,.1) 56%, transparent 72%);
+    border:1px solid var(--line);}
+  .spacer{flex:1}
+  .seg{display:flex; gap:2px; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:999px; padding:3px;}
+  .seg button{background:transparent; border:0; color:var(--muted); font:inherit; font-size:12px; padding:6px 12px; border-radius:999px; cursor:pointer; display:flex; align-items:center; gap:6px;}
+  .seg button.on{background:rgba(89,182,255,.16); color:var(--accent);}
+  .btn{
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer; font:inherit; font-size:12.5px;
+    border:1px solid var(--line); background:rgba(255,255,255,.04); color:var(--ink);
+    padding:8px 13px; border-radius:var(--radius); transition:background .15s, border-color .15s, transform .1s;
+  }
+  .btn:hover{background:rgba(255,255,255,.08); border-color:rgba(232,232,234,.25)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--accent); color:#04121f; border-color:var(--accent); font-weight:650}
+  .btn.primary:hover{background:#7cc6ff}
+  .btn.ghost{background:transparent}
+  .status{font-size:12px; color:var(--muted); min-width:96px; text-align:right}
+  .status.dirty{color:#fbbf24}
+  .status.saved{color:var(--ok)}
+  /* stage */
+  .stage{flex:1; position:relative; overflow:auto; display:flex; justify-content:center; align-items:flex-start; background:
+    radial-gradient(900px 600px at 50% 0%, #0d0d12 0%, var(--bg0) 70%); padding:22px;}
+  .frameWrap{background:#000; box-shadow:0 20px 70px rgba(0,0,0,.6); border:1px solid var(--line); border-radius:14px; overflow:hidden; transition:width .25s ease; width:100%; max-width:100%;}
+  iframe{display:block; width:100%; height:calc(100vh - 54px - 44px); border:0; background:#050507;}
+  /* hint bar */
+  .hint{height:44px; flex-shrink:0; display:flex; align-items:center; gap:10px; padding:0 16px; background:var(--bg1); border-top:1px solid var(--line); font-size:12px; color:var(--muted); overflow-x:auto; white-space:nowrap;}
+  .hint b{color:var(--ink); font-weight:600}
+  .kbd{display:inline-block; border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-size:11px; color:var(--ink); background:rgba(255,255,255,.04)}
+  /* modal */
+  .ov{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .ov.show{display:flex}
+  .modal{background:var(--bg2); border:1px solid var(--line); border-radius:14px; max-width:560px; width:100%; padding:26px; line-height:1.7;}
+  .modal h2{font-size:16px; margin-bottom:14px; letter-spacing:.02em}
+  .modal p{color:var(--muted); font-size:13.5px; margin-bottom:10px}
+  .modal ol{color:var(--muted); font-size:13.5px; margin:0 0 12px 18px}
+  .modal ol li{margin-bottom:7px}
+  .modal .close{margin-top:8px}
+  .imgList{margin-top:10px; display:grid; gap:8px}
+  .imgItem{display:flex; align-items:center; gap:10px; font-size:12px; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:8px; padding:8px}
+  .imgItem img{width:44px;height:44px;object-fit:cover;border-radius:6px;background:#000}
+  .imgItem code{color:var(--accent)}
+  @media (max-width:720px){
+    .seg, .status{display:none}
+    .top{gap:8px; padding:0 10px}
+    .btn span.lbl{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand"><span class="mark"></span> Flow Studio Editor</div>
+    <div class="seg" id="deviceSeg">
+      <button data-w="100%" class="on" title="桌機">▭ 桌機</button>
+      <button data-w="820px" title="平板">▢ 平板</button>
+      <button data-w="390px" title="手機">▯ 手機</button>
+    </div>
+    <div class="spacer"></div>
+    <span class="status" id="status">就緒</span>
+    <button class="btn ghost" id="btnHelp" title="使用說明">? <span class="lbl">說明</span></button>
+    <button class="btn ghost" id="btnOpen" title="在新分頁開啟正式網站">↗ <span class="lbl">看網站</span></button>
+    <button class="btn ghost" id="btnReset" title="清除瀏覽器草稿">⟲ <span class="lbl">清草稿</span></button>
+    <button class="btn primary" id="btnSave">↓ <span class="lbl">儲存並下載</span></button>
+  </div>
+
+  <div class="stage">
+    <div class="frameWrap" id="frameWrap" style="width:100%">
+      <iframe id="frame" src="index.html?edit=1" title="網站預覽"></iframe>
+    </div>
+  </div>
+
+  <div class="hint">
+    <span><b>用法:</b></span>
+    <span>滑鼠點任何<b>文字</b>就能直接改</span>·
+    <span>點<b>圖片</b>會跳出選檔換圖</span>·
+    <span>改好按右上角 <span class="kbd">儲存並下載</span></span>·
+    <span id="countHint" style="color:var(--accent)"></span>
+  </div>
+
+  <!-- Help modal -->
+  <div class="ov" id="ovHelp">
+    <div class="modal">
+      <h2>怎麼用這個編輯器</h2>
+      <ol>
+        <li><b>改文字:</b>滑鼠移到任何標題或段落會出現藍框,點下去就能像打字一樣修改。</li>
+        <li><b>換圖片:</b>滑鼠移到圖片會顯示「點擊更換圖片」,點一下選你電腦裡的新圖即可即時預覽。</li>
+        <li><b>自動暫存:</b>你的修改會自動存進這台電腦的瀏覽器,關掉再回來不會不見(除非你按「清草稿」)。</li>
+        <li><b>儲存上線:</b>按右上角 <b>儲存並下載</b> 會下載一份新的 <code>index.html</code>。把它<b>覆蓋</b>回你網站資料夾裡的同名檔案就完成更新。</li>
+        <li><b>換過的圖片:</b>下載時會一併列出你換過的圖,記得把那些圖檔放進 <code>images/</code> 資料夾(檔名要一致)。</li>
+      </ol>
+      <p style="font-size:12px;color:rgba(232,232,234,.4)">提示:這是「真‧所見即所得」——你看到的就是訪客會看到的版面,不會動到任何既有元素或結構。</p>
+      <button class="btn primary close" onclick="document.getElementById('ovHelp').classList.remove('show')">知道了</button>
+    </div>
+  </div>
+
+  <!-- Save / images modal -->
+  <div class="ov" id="ovSave">
+    <div class="modal">
+      <h2>已下載 index.html ✓</h2>
+      <p>把剛剛下載的 <code>index.html</code> <b>覆蓋</b>回你的網站資料夾即可更新內容。</p>
+      <div id="imgArea"></div>
+      <button class="btn primary close" onclick="document.getElementById('ovSave').classList.remove('show')">完成</button>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var frame = document.getElementById("frame");
+  var statusEl = document.getElementById("status");
+  var DRAFT_KEY = "fs_edit_draft";
+  var lastPatch = null;
+  var ready = false;
+
+  function setStatus(txt, cls){ statusEl.textContent = txt; statusEl.className = "status" + (cls?(" "+cls):""); }
+
+  function loadDraft(){ try{ var r = localStorage.getItem(DRAFT_KEY); return r? JSON.parse(r): null; }catch(e){ return null; } }
+  function saveDraft(p){ try{ localStorage.setItem(DRAFT_KEY, JSON.stringify(p)); }catch(e){} }
+
+  // device width switch
+  var seg = document.getElementById("deviceSeg");
+  seg.addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    Array.prototype.forEach.call(seg.children, function(c){ c.classList.remove("on"); });
+    b.classList.add("on");
+    document.getElementById("frameWrap").style.width = b.getAttribute("data-w");
+  });
+
+  document.getElementById("btnHelp").addEventListener("click", function(){ document.getElementById("ovHelp").classList.add("show"); });
+  document.getElementById("btnOpen").addEventListener("click", function(){ window.open("index.html", "_blank"); });
+  document.getElementById("btnReset").addEventListener("click", function(){
+    if(confirm("確定要清除瀏覽器裡的草稿嗎?已下載的檔案不受影響。")){
+      localStorage.removeItem(DRAFT_KEY); lastPatch=null;
+      frame.contentWindow.location.reload();
+      setStatus("已清除草稿");
+    }
+  });
+
+  // talk to the iframe
+  function post(msg){ frame.contentWindow.postMessage(msg, "*"); }
+
+  window.addEventListener("message", function(e){
+    if (e.source !== frame.contentWindow) return;
+    var d = e.data || {};
+    if (d.type === "fs-ready"){
+      ready = true;
+      document.getElementById("countHint").textContent =
+        "可編輯:" + d.counts.texts + " 段文字 · " + d.counts.imgs + " 張圖片";
+      var draft = loadDraft();
+      if (draft){ post({ type:"fs-load-draft", patch: draft }); setStatus("已載入草稿", "saved"); }
+      else setStatus("就緒");
+    }
+    else if (d.type === "fs-dirty"){ setStatus("編輯中…", "dirty"); }
+    else if (d.type === "fs-autosave"){ lastPatch = d.patch; saveDraft(d.patch); setStatus("已自動暫存 ✓", "saved"); }
+    else if (d.type === "fs-export-result"){ doDownload(d.html, d.images); }
+  });
+
+  // when iframe reloads, mark not ready
+  frame.addEventListener("load", function(){ ready = false; setStatus("載入中…"); });
+
+  document.getElementById("btnSave").addEventListener("click", function(){
+    if (!ready){ alert("預覽還在載入,請稍候再試。"); return; }
+    setStatus("產生檔案中…");
+    post({ type:"fs-request-export" });
+  });
+
+  function download(filename, blob){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }
+
+  function dataURLtoBlob(dataUrl){
+    var parts = dataUrl.split(","), mime = parts[0].match(/:(.*?);/)[1];
+    var bin = atob(parts[1]), n = bin.length, u8 = new Uint8Array(n);
+    while(n--) u8[n] = bin.charCodeAt(n);
+    return new Blob([u8], { type: mime });
+  }
+
+  function doDownload(html, images){
+    download("index.html", new Blob([html], { type:"text/html" }));
+    var area = document.getElementById("imgArea");
+    if (images && images.length){
+      var html2 = '<p style="margin-top:6px">你換過 <b>' + images.length + '</b> 張圖,請下載並放進 <code>images/</code>:</p><div class="imgList">';
+      images.forEach(function(im, i){
+        html2 += '<div class="imgItem"><img src="'+im.dataUrl+'"><span>放到 <code>images/'+im.filename+'</code></span>'+
+                 '<button class="btn" style="margin-left:auto" data-i="'+i+'">↓ 下載圖</button></div>';
+      });
+      html2 += '</div>';
+      area.innerHTML = html2;
+      area.querySelectorAll("button[data-i]").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var im = images[+btn.getAttribute("data-i")];
+          download(im.filename, dataURLtoBlob(im.dataUrl));
+        });
+      });
+    } else { area.innerHTML = ""; }
+    document.getElementById("ovSave").classList.add("show");
+    setStatus("已下載 ✓", "saved");
+  }
+
+  window.addEventListener("beforeunload", function(e){
+    if (statusEl.classList.contains("dirty")){ e.preventDefault(); e.returnValue = ""; }
+  });
+})();
+</script>
+</body>
+</html>
